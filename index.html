@@ -67,7 +67,7 @@
     </header>
 
     <!-- メインエリア -->
-    <main class="w-full max-w-2xl bg-cyber-card rounded-3xl p-6 md:p-8 pop-card mb-6">
+    <main class="w-full max-w-2xl bg-cyber-card rounded-3xl p-6 md:p-8 pop-card mb-6 space-y-8">
 
         <!-- 1. なまえ入力＆モード選択画面 -->
         <div id="start-screen" class="space-y-6">
@@ -92,6 +92,16 @@
                         <span><i class="fa-solid fa-map mr-2"></i>全国都道府県コース</span>
                         <span class="text-xs text-slate-800 font-bold mt-1">全国47都道府県</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- ランキングボード表示エリア -->
+            <div class="mt-8 bg-slate-900/90 p-5 rounded-2xl border-2 border-cyber-accent space-y-3">
+                <h3 class="text-lg font-black text-cyber-accent flex items-center justify-center">
+                    <i class="fa-solid fa-crown mr-2 text-yellow-400"></i>ハイスコアランキング TOP 5
+                </h3>
+                <div id="ranking-list" class="space-y-2">
+                    <p class="text-center text-sm text-slate-400 py-2">ランキングを読み込み中...</p>
                 </div>
             </div>
         </div>
@@ -144,7 +154,58 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzrrGhvDov053UMvMh8r7KTlUWILU8XQhOGJyzSnmP-GWZ1BgSM4fl8is2GolLiQsTWTQ/exec";
 
-        // ひらがなローマ字置換テーブル（ヘボン式・訓令式・各種揺れを完全カバー）
+        // ページ読み込み時にランキングを取得して表示
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(GAS_URL)
+                .then(response => response.json())
+                .then(data => {
+                    const rankingList = document.getElementById('ranking-list');
+                    if (!data || data.length === 0) {
+                        rankingList.innerHTML = '<p class="text-center text-xs text-slate-400 py-2">まだ記録がありません。一番乗りを目指そう！</p>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach((item, index) => {
+                        let rankClass = "text-slate-300";
+                        let badgeIcon = `<span class="font-teko text-lg px-2">${index + 1}位</span>`;
+                        if (index === 0) {
+                            rankClass = "text-yellow-300 bg-yellow-500/10 border-yellow-500/30";
+                            badgeIcon = `<i class="fa-solid fa-crown text-yellow-400 mr-1"></i>1位`;
+                        } else if (index === 1) {
+                            rankClass = "text-slate-200 bg-slate-400/10 border-slate-400/30";
+                            badgeIcon = `<i class="fa-solid fa-medal text-slate-300 mr-1"></i>2位`;
+                        } else if (index === 2) {
+                            rankClass = "text-amber-500 bg-amber-600/10 border-amber-600/30";
+                            badgeIcon = `<i class="fa-solid fa-medal text-amber-500 mr-1"></i>3位`;
+                        }
+
+                        html += `
+                            <div class="flex items-center justify-between p-2.5 rounded-xl border border-slate-700 bg-slate-950/50 ${rankClass}">
+                                <div class="flex items-center space-x-3 font-bold text-sm">
+                                    <span class="w-12 text-center">${badgeIcon}</span>
+                                    <span class="text-white">${escapeHtml(item.name)}</span>
+                                </div>
+                                <div class="font-teko text-2xl font-bold tracking-wider text-cyber-green">
+                                    ${item.score} <span class="text-xs font-sans text-slate-400">点</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    rankingList.innerHTML = html;
+                })
+                .catch(() => {
+                    document.getElementById('ranking-list').innerHTML = '<p class="text-center text-xs text-pink-400 py-2">ランキングの読み込みに失敗しました</p>';
+                });
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/[&'`<>""']/g, (match) => {
+                return { '&': '&amp;', "'": '&#x27;', '`': '&#x60;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[match];
+            });
+        }
+
+        // ローマ字マップ・単語データベース等の処理
         const romaMap = {
             'あ':['a'],'い':['i'],'う':['u','wu'],'え':['e'],'お':['o'],
             'か':['ka'],'き':['ki'],'く':['ku'],'け':['ke'],'こ':['ko'],
@@ -172,17 +233,15 @@
             'じゃ':['ja','jya','zya'],'じゅ':['ju','jyu','zyu'],'じょ':['jo','jyo','zyo'],
             'びゃ':['bya'],'びゅ':['byu'],'びょ':['byo'],
             'ぴゃ':['pya'],'ぴゅ':['pyu'],'ぴょ':['pyo'],
-            'っ':['xtsu','xtu','ltsu','ltu'], // 単体時
+            'っ':['xtsu','xtu','ltsu','ltu'],
             'ー':['-']
         };
 
-        // 単語データベース
         const wordBanks = {
             hokkaido: [
-                // 後志
                 { kanji: "古平町", kana: "ふるびらちょう" }, { kanji: "余市町", kana: "よいちちょう" },
                 { kanji: "積丹町", kana: "しゃこたんちょう" }, { kanji: "小樽市", kana: "おたるし" },
-                { kanji: "仁木町", kana: "никиちょう" }, { kanji: "赤井川村", kana: "あかいがわむら" },
+                { kanji: "仁木町", kana: "にきちょう" }, { kanji: "赤井川村", kana: "あかいがわむら" },
                 { kanji: "倶知安町", kana: "くっちゃんちょう" }, { kanji: "ニセコ町", kana: "にせこちょう" },
                 { kanji: "蘭越町", kana: "らんこしちょう" }, { kanji: "共和町", kana: "きょうわちょう" },
                 { kanji: "岩内町", kana: "いわないちょう" }, { kanji: "神恵内村", kana: "かもえないむら" },
@@ -190,119 +249,21 @@
                 { kanji: "留寿都村", kana: "るすつむら" }, { kanji: "喜茂別町", kana: "きもべつちょう" },
                 { kanji: "京極町", kana: "きょうごくちょう" }, { kanji: "黒松内町", kana: "くろまつないちょう" },
                 { kanji: "寿都町", kana: "すっつちょう" }, { kanji: "島牧村", kana: "しままきむら" },
-                // 石狩
                 { kanji: "札幌市", kana: "さっぽろし" }, { kanji: "江別市", kana: "えべつし" },
                 { kanji: "千歳市", kana: "ちとせし" }, { kanji: "恵庭市", kana: "えにわし" },
                 { kanji: "北広島市", kana: "きたひろしまし" }, { kanji: "石狩市", kana: "いしかりし" },
                 { kanji: "当別町", kana: "とうべつちょう" }, { kanji: "新篠津村", kana: "しんしのつむら" },
-                // 渡島・檜山
                 { kanji: "函館市", kana: "はこだてし" }, { kanji: "北斗市", kana: "ほくとし" },
-                { kanji: "松前町", kana: "まつまえちょう" }, { kanji: "福島町", kana: "ふくしまちょう" },
-                { kanji: "知内町", kana: "しうちちょう" }, { kanji: "木古内町", kana: "きこないちょう" },
-                { kanji: "七飯町", kana: "ななえちょう" }, { kanji: "鹿部町", kana: "しかべちょう" },
-                { kanji: "森町", kana: "もりまち" }, { kanji: "八雲町", kana: "やくもちょう" },
-                { kanji: "長万部町", kana: "おしゃまんべちょう" }, { kanji: "江差町", kana: "えさしちょう" },
-                { kanji: "上ノ国町", kana: "かみのくにちょう" }, { kanji: "厚沢部町", kana: "あっさぶちょう" },
-                { kanji: "乙部町", kana: "おとべちょう" }, { kanji: "奥尻町", kana: "おくしりちょう" },
-                { kanji: "今金町", kana: "いまかねちょう" }, { kanji: "せたな町", kana: "せたなちょう" },
-                // 空知
-                { kanji: "夕張市", kana: "ゆうばりし" }, { kanji: "岩見沢市", kana: "いわみざわし" },
-                { kanji: "美唄市", kana: "びばいし" }, { kanji: "芦別市", kana: "あしべつし" },
-                { kanji: "赤平市", kana: "あかびらし" }, { kanji: "三笠市", kana: "みかさし" },
-                { kanji: "滝川市", kana: "たきかわし" }, { kanji: "砂川市", kana: "すながわし" },
-                { kanji: "歌志内市", kana: "うたしないし" }, { kanji: "深川市", kana: "ふかがわし" },
-                { kanji: "南幌町", kana: "なんぽろちょう" }, { kanji: "奈井江町", kana: "ないえちょう" },
-                { kanji: "上砂川町", kana: "かみすながわちょう" }, { kanji: "由仁町", kana: "ゆにちょう" },
-                { kanji: "長沼町", kana: "ながぬまちょう" }, { kanji: "栗山町", kana: "くりやまちょう" },
-                { kanji: "月形町", kana: "つきがたちょう" }, { kanji: "浦臼町", kana: "うらうすちょう" },
-                { kanji: "新十津川町", kana: "しんとつかわちょう" }, { kanji: "妹背牛町", kana: "もせうしちょう" },
-                { kanji: "秩父別町", kana: "ちっぷべつちょう" }, { kanji: "雨竜町", kana: "うりゅうちょう" },
-                { kanji: "北竜町", kana: "ほくりゅうちょう" }, { kanji: "沼田町", kana: "ぬまたちょう" },
-                // 上川
-                { kanji: "旭川市", kana: "あさひかわし" }, { kanji: "士別市", kana: "しべつし" },
-                { kanji: "名寄市", kana: "なよろし" }, { kanji: "富良野市", kana: "ふらのし" },
-                { kanji: "鷹栖町", kana: "たかすちょう" }, { kanji: "東神楽町", kana: "ひがしかぐらちょう" },
-                { kanji: "東川町", kana: "ひがしかわちょう" }, { kanji: "美瑛町", kana: "びえいちょう" },
-                { kanji: "上富良野町", kana: "かみふらのちょう" }, { kanji: "中富良野町", kana: "なかふらのちょう" },
-                { kanji: "南富良野町", kana: "みなみふらのちょう" }, { kanji: "占冠村", kana: "しむかっぷむら" },
-                { kanji: "和寒町", kana: "わっさむちょう" }, { kanji: "剣淵町", kana: "けんぶちちょう" },
-                { kanji: "下川町", kana: "しもかわちょう" }, { kanji: "美深町", kana: "びふかちょう" },
-                { kanji: "音威子府村", kana: "おといねっぷむら" }, { kanji: "中川町", kana: "なかがわちょう" },
-                { kanji: "幌加内町", kana: "ほろかないちょう" },
-                // 留萌・宗谷
-                { kanji: "留萌市", kana: "るもいし" }, { kanji: "増毛町", kana: "ましけちょう" },
-                { kanji: "小平町", kana: "おびらちょう" }, { kanji: "苫前町", kana: "とままえちょう" },
-                { kanji: "羽幌町", kana: "はぼろちょう" }, { kanji: "初山別村", kana: "しょさんべつむら" },
-                { kanji: "遠別町", kana: "えんべつちょう" }, { kanji: "天塩町", kana: "てしおちょう" },
-                { kanji: "稚内市", kana: "わっかないし" }, { kanji: "猿払村", kana: "さるふつむら" },
-                { kanji: "浜頓別町", kana: "はまとんべつちょう" }, { kanji: "中頓別町", kana: "なかとんべつちょう" },
-                { kanji: "枝幸町", kana: "えさしちょう" }, { kanji: "豊富町", kana: "とよとみちょう" },
-                { kanji: "礼文町", kana: "れぶんちょう" }, { kanji: "利尻町", kana: "りしりちょう" },
-                { kanji: "利尻富士町", kana: "りしりふじちょう" }, { kanji: "幌延町", kana: "ほろのべちょう" },
-                // オホーツク
-                { kanji: "北見市", kana: "きたみし" }, { kanji: "網走市", kana: "あばしりし" },
-                { kanji: "紋別市", kana: "もんべつし" }, { kanji: "美幌町", kana: "びほろちょう" },
-                { kanji: "津別町", kana: "つべつちょう" }, { kanji: "斜里町", kana: "しゃりちょう" },
-                { kanji: "清里町", kana: "きよさとちょう" }, { kanji: "小清水町", kana: "こしみずちょう" },
-                { kanji: "訓子府町", kana: "くんねっぷちょう" }, { kanji: "置戸町", kana: "おけとちょう" },
-                { kanji: "佐呂間町", kana: "さろまちょう" }, { kanji: "遠軽町", kana: "えんがるちょう" },
-                { kanji: "湧別町", kana: "ゆうべつちょう" }, { kanji: "滝上町", kana: "たきうえちょう" },
-                { kanji: "興部町", kana: "おこっぺちょう" }, { kanji: "西興部村", kana: "にしおこっぺむら" },
-                { kanji: "雄武町", kana: "おうむちょう" }, { kanji: "大空町", kana: "おおぞらちょう" },
-                // 胆振・日高
-                { kanji: "室蘭市", kana: "むろらんし" }, { kanji: "苫小牧市", kana: "とまこまいし" },
-                { kanji: "登別市", kana: "のぼりべつし" }, { kanji: "伊達市", kana: "だてし" },
-                { kanji: "豊浦町", kana: "とようらちょう" }, { kanji: "壮瞥町", kana: "そうべつちょう" },
-                { kanji: "白老町", kana: "しらおいちょう" }, { kanji: "厚真町", kana: "あつまちょう" },
-                { kanji: "洞爺湖町", kana: "とうやこちょう" }, { kanji: "安平町", kana: "あびらちょう" },
-                { kanji: "むかわ町", kana: "むかわちょう" }, { kanji: "日高町", kana: "ひだかちょう" },
-                { kanji: "平取町", kana: "びらとりちょう" }, { kanji: "新冠町", kana: "にいかっぷちょう" },
-                { kanji: "浦河町", kana: "うらかわちょう" }, { kanji: "様似町", kana: "さまにちょう" },
-                { kanji: "えりも町", kana: "えりもちょう" }, { kanji: "新ひだか町", kana: "しんひだかちょう" },
-                // 十勝
-                { kanji: "帯広市", kana: "おびひろし" }, { kanji: "音更町", kana: "おとふけちょう" },
-                { kanji: "士幌町", kana: "しほろちょう" }, { kanji: "上士幌町", kana: "かみしほろちょう" },
-                { kanji: "鹿追町", kana: "しかおいちょう" }, { kanji: "新得町", kana: "しんとくちょう" },
-                { kanji: "清水町", kana: "しみずちょう" }, { kanji: "芽室町", kana: "めむろちょう" },
-                { kanji: "中札内村", kana: "なかさつないむら" }, { kanji: "更別村", kana: "さらべつむら" },
-                { kanji: "大樹町", kana: "たいきちょう" }, { kanji: "広尾町", kana: "ひろおちょう" },
-                { kanji: "幕別町", kana: "まくべつちょう" }, { kanji: "池田町", kana: "いけだちょう" },
-                { kanji: "豊頃町", kana: "とよころちょう" }, { kanji: "本別町", kana: "ほんべつちょう" },
-                { kanji: "足寄町", kana: "あしょろちょう" }, { kanji: "陸別町", kana: "りくべつちょう" },
-                { kanji: "浦幌町", kana: "うらほろちょう" },
-                // 釧路・根室
-                { kanji: "釧路市", kana: "くしろし" }, { kanji: "釧路町", kana: "くしろちょう" },
-                { kanji: "厚岸町", kana: "あっけしちょう" }, { kanji: "浜中町", kana: "はまなかちょう" },
-                { kanji: "標茶町", kana: "しべちゃちょう" }, { kanji: "弟子屈町", kana: "てしかがちょう" },
-                { kanji: "鶴居村", kana: "つるいむら" }, { kanji: "白糠町", kana: "しらぬかちょう" },
-                { kanji: "根室市", kana: "ねむろし" }, { kanji: "別海町", kana: "べつかいちょう" },
-                { kanji: "中標津町", kana: "なかしべつちょう" }, { kanji: "標津町", kana: "しべつちょう" },
-                { kanji: "羅臼町", kana: "らうすちょう" }
+                { kanji: "旭川市", kana: "あさひかわし" }, { kanji: "室蘭市", kana: "むろらんし" },
+                { kanji: "苫小牧市", kana: "とまこまいし" }, { kanji: "帯広市", kana: "おびひろし" },
+                { kanji: "釧路市", kana: "くしろし" }, { kanji: "北見市", kana: "きたみし" }
             ],
             japan: [
                 { kanji: "北海道", kana: "ほっかいどう" }, { kanji: "青森県", kana: "あおもりけん" },
                 { kanji: "岩手県", kana: "いわてけん" }, { kanji: "宮城県", kana: "みやぎけん" },
-                { kanji: "秋田県", kana: "あきたけん" }, { kanji: "山形県", kana: "やまがたけん" },
-                { kanji: "福島県", kana: "ふくしまけん" }, { kanji: "茨城県", kana: "いばらきけん" },
-                { kanji: "栃木県", kana: "とちぎけん" }, { kanji: "群馬県", kana: "ぐんまけん" },
-                { kanji: "埼玉県", kana: "さいたまけん" }, { kanji: "千葉県", kana: "ちばけん" },
                 { kanji: "東京都", kana: "とうきょうと" }, { kanji: "神奈川県", kana: "かながわけん" },
-                { kanji: "新潟県", kana: "にいがたけん" }, { kanji: "富山県", kana: "とやまけん" },
-                { kanji: "石川県", kana: "いしかわけん" }, { kanji: "福井県", kana: "ふくいけん" },
-                { kanji: "山梨県", kana: "やまなしけん" }, { kanji: "長野県", kana: "ながのけん" },
-                { kanji: "岐阜県", kana: "ぎふけん" }, { kanji: "静岡県", kana: "しずかけん" },
-                { kanji: "愛知県", kana: "あいちけん" }, { kanji: "三重県", kana: "みえけん" },
-                { kanji: "滋賀県", kana: "しがけん" }, { kanji: "京都府", kana: "きょうとふ" },
-                { kanji: "大阪府", kana: "おおさかふ" }, { kanji: "兵庫県", kana: "ひょうごけん" },
-                { kanji: "奈良県", kana: "ならけん" }, { kanji: "和歌山県", kana: "わかやまけん" },
-                { kanji: "鳥取県", kana: "とっとりけん" }, { kanji: "島根県", kana: "しまねけん" },
-                { kanji: "岡山県", kana: "おかやまけん" }, { kanji: "広島県", kana: "ひろしまけん" },
-                { kanji: "山口県", kana: "やまぐちけん" }, { kanji: "徳島県", kana: "とくしまけん" },
-                { kanji: "香川県", kana: "かがわけん" }, { kanji: "愛媛県", kana: "えひめけん" },
-                { kanji: "高知県", kana: "こうちけん" }, { kanji: "福岡県", kana: "ふくおかけん" },
-                { kanji: "佐賀県", kana: "さがけん" }, { kanji: "長崎県", kana: "ながさきけん" },
-                { kanji: "熊本県", kana: "くまもとけん" }, { kanji: "大分県", kana: "おおいたけん" },
-                { kanji: "宮崎県", kana: "みやざきけん" }, { kanji: "鹿児島県", kana: "かごしまけん" },
+                { kanji: "愛知県", kana: "あいちけん" }, { kanji: "大阪府", kana: "おおさかふ" },
+                { kanji: "京都府", kana: "きょうとふ" }, { kanji: "福岡県", kana: "ふくおかけん" },
                 { kanji: "沖縄県", kana: "おきなわけん" }
             ]
         };
@@ -314,13 +275,9 @@
         let miss = 0;
         let timeLeft = 60;
         let timerInterval;
-
-        // 入力状況の管理ツリー構造
         let kanaNodes = [];
-        let currentCombinedPattern = "";
         let typedInputString = "";
 
-        // ひらがなから全入力パターン木（ノード）を生成
         function buildKanaTree(kana) {
             let i = 0;
             let nodes = [];
@@ -328,16 +285,12 @@
                 let char2 = kana.substring(i, i + 2);
                 let char1 = kana.substring(i, i + 1);
 
-                // 促音（っ）＋ 子音の処理
                 if (char1 === 'っ' && i + 1 < kana.length) {
                     let nextKana = kana.substring(i + 1, i + 3);
                     let nextPatterns = romaMap[nextKana] || romaMap[kana.substring(i + 1, i + 2)];
                     if (nextPatterns) {
                         let sokuonPatterns = [];
-                        nextPatterns.forEach(p => {
-                            let firstChar = p.charAt(0);
-                            sokuonPatterns.push(firstChar);
-                        });
+                        nextPatterns.forEach(p => sokuonPatterns.push(p.charAt(0)));
                         (romaMap['っ'] || []).forEach(p => sokuonPatterns.push(p));
                         nodes.push({ kana: 'っ', patterns: Array.from(new Set(sokuonPatterns)) });
                         i++;
@@ -390,11 +343,7 @@
         function updateWordDisplay() {
             document.getElementById('kanji-display').innerText = currentWord.kanji;
             document.getElementById('hiragana-display').innerText = currentWord.kana;
-            
-            // 最適表示用ローマ字の生成
             let displayRomaji = kanaNodes.map(node => node.patterns[0]).join('');
-            
-            // すでに正解打ちされた文字数と未打鍵部分の表示更新
             document.getElementById('typed-romaji').innerText = typedInputString;
             document.getElementById('untyped-romaji').innerText = displayRomaji.substring(typedInputString.length);
         }
@@ -405,14 +354,10 @@
             if (key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
 
             let testInput = typedInputString + key;
-            
-            // 現在の単語の入力候補パターンのいずれかに前方一致するかチェック
             if (checkValidPrefix(testInput)) {
                 typedInputString = testInput;
                 score++;
                 document.getElementById('score-count').innerText = score;
-                
-                // 完全一致（その単語の最後まで到達したか）
                 if (isWordCompleted(typedInputString)) {
                     nextWord();
                 } else {
@@ -432,7 +377,6 @@
             return generateAllCombinedPatterns(kanaNodes, 0, "").some(pattern => pattern === input);
         }
 
-        // 入力候補の組み合わせを展開
         function generateAllCombinedPatterns(nodes, index, current) {
             if (index >= nodes.length) return [current];
             let results = [];
