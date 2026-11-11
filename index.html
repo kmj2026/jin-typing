@@ -96,8 +96,8 @@
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-flask text-3xl"></i>
                         <div>
-                            <div>元素の名前クイズ</div>
-                            <div class="text-xs text-slate-800 font-bold mt-0.5">化学の元素記号＆名前を覚える！</div>
+                            <div>元素の名前クイズ（全118種）</div>
+                            <div class="text-xs text-slate-800 font-bold mt-0.5">周期表の元素を完全制覇！</div>
                         </div>
                     </div>
                     <i class="fa-solid fa-chevron-right"></i>
@@ -107,7 +107,7 @@
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-globe text-3xl"></i>
                         <div>
-                            <div>ブラウザテスト</div>
+                            <div>総合テスト</div>
                             <div class="text-xs text-slate-800 font-bold mt-0.5">外部テストページ（jin-test）</div>
                         </div>
                     </div>
@@ -154,7 +154,7 @@
         <!-- 2. 元素クイズコース選択＆ランキング画面 -->
         <div id="element-menu-screen" class="hidden space-y-6">
             <h2 class="text-2xl font-black text-center text-white mb-2">
-                <i class="fa-solid fa-flask text-cyber-accent mr-2"></i>元素の名前クイズ
+                <i class="fa-solid fa-flask text-cyber-accent mr-2"></i>元素の名前クイズ（全118種）
             </h2>
             
             <div class="space-y-2 text-left">
@@ -164,7 +164,7 @@
             </div>
 
             <button onclick="startElementQuiz()" class="pop-button w-full py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
-                <i class="fa-solid fa-play mr-2"></i>元素クイズをスタート！
+                <i class="fa-solid fa-play mr-2"></i>全118元素クイズをスタート！
             </button>
 
             <div class="bg-slate-900/90 p-4 rounded-2xl border border-emerald-500/50 space-y-2 mt-4">
@@ -173,10 +173,10 @@
             </div>
         </div>
 
-        <!-- 3. ブラウザテスト選択＆ランキング画面 -->
+        <!-- 3. 総合テスト選択＆ランキング画面 -->
         <div id="test-menu-screen" class="hidden space-y-6 text-center">
             <h2 class="text-2xl font-black text-white mb-2">
-                <i class="fa-solid fa-globe text-cyber-accent mr-2"></i>ブラウザテスト (jin-test)
+                <i class="fa-solid fa-globe text-cyber-accent mr-2"></i>総合テスト (jin-test)
             </h2>
             
             <div class="space-y-2 text-left">
@@ -196,7 +196,7 @@
             </div>
 
             <div class="bg-slate-900/90 p-4 rounded-2xl border border-purple-500/50 space-y-2 mt-4 text-left">
-                <h3 class="text-sm font-black text-purple-400 text-center"><i class="fa-solid fa-crown mr-1"></i>ブラウザテスト TOP 5</h3>
+                <h3 class="text-sm font-black text-purple-400 text-center"><i class="fa-solid fa-crown mr-1"></i>総合テスト TOP 5</h3>
                 <div id="ranking-test" class="space-y-1.5 text-xs">読み込み中...</div>
             </div>
         </div>
@@ -229,13 +229,14 @@
         <!-- 5. 元素クイズプレイ画面 -->
         <div id="element-game-screen" class="hidden space-y-6 text-center">
             <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
-                <span class="text-xl font-black text-cyber-accent"><i class="fa-solid fa-flask mr-2"></i>元素の名前クイズ (残り <span id="elem-timer" class="font-teko text-2xl text-cyber-pink">30</span>秒)</span>
+                <span class="text-xl font-black text-cyber-accent"><i class="fa-solid fa-flask mr-2"></i>元素クイズ (残り <span id="elem-timer" class="font-teko text-2xl text-cyber-pink">30</span>秒)</span>
                 <span class="text-sm font-bold text-cyber-green">正解数: <span id="elem-score" class="text-xl font-black">0</span></span>
             </div>
 
-            <div class="bg-slate-900 p-8 rounded-2xl border-2 border-emerald-500 space-y-4">
-                <div id="elem-symbol" class="text-6xl font-black text-emerald-400 font-mono tracking-wider">H</div>
-                <div class="text-sm text-slate-400 font-bold">この元素の名前はなにかな？</div>
+            <div class="bg-slate-900 p-8 rounded-2xl border-2 border-emerald-500 space-y-3">
+                <div id="elem-number" class="text-sm font-bold text-emerald-400">原子番号: 1</div>
+                <div id="elem-symbol" class="text-5xl md:text-6xl font-black text-emerald-300 font-mono tracking-wider">H</div>
+                <div class="text-sm text-slate-300 font-bold pt-2">この元素の名前はなにかな？</div>
                 
                 <div id="elem-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2"></div>
             </div>
@@ -286,7 +287,6 @@
                 document.getElementById('home-btn').classList.add('hidden');
             } else {
                 document.getElementById('home-btn').classList.remove('hidden');
-                // メニュー画面に戻ったときに対応するランキングを再描画
                 if (screenId === 'typing-menu-screen') renderRankings('hokkaido', 'ranking-hokkaido'), renderRankings('japan', 'ranking-japan');
                 if (screenId === 'element-menu-screen') renderRankings('element', 'ranking-element');
                 if (screenId === 'test-menu-screen') renderRankings('test', 'ranking-test');
@@ -303,7 +303,6 @@
                 .then(response => response.json())
                 .then(data => {
                     allRankings = data || {};
-                    // 各メニューのランキングを描画
                     renderRankings('hokkaido', 'ranking-hokkaido');
                     renderRankings('japan', 'ranking-japan');
                     renderRankings('element', 'ranking-element');
@@ -566,7 +565,7 @@
                     })
                 }).then(() => {
                     document.getElementById('send-status').innerText = "✅ スプレッドシートに記録を保存しました！";
-                    fetchAllRankings(); // 最新ランキングを再取得
+                    fetchAllRankings();
                 }).catch(() => {
                     document.getElementById('send-status').innerText = "⚠️ 送信エラーが発生しました";
                 });
@@ -575,18 +574,67 @@
             }
         }
 
-        // ==================== 元素クイズ関連 ====================
+        // ==================== 元素クイズ関連 (全118元素完全網羅) ====================
         const elementsData = [
-            { symbol: "H", name: "水素" }, { symbol: "He", name: "ヘリウム" },
-            { symbol: "C", name: "炭素" }, { symbol: "N", name: "窒素" },
-            { symbol: "O", name: "酸素" }, { symbol: "Na", name: "ナトリウム" },
-            { symbol: "Mg", name: "マグネシウム" }, { symbol: "Al", name: "アルミニウム" },
-            { symbol: "Si", name: "ケイ素" }, { symbol: "P", name: "リン" },
-            { symbol: "S", name: "硫黄" }, { symbol: "Cl", name: "塩素" },
-            { symbol: "K", name: "カリウム" }, { symbol: "Ca", name: "カルシウム" },
-            { symbol: "Fe", name: "鉄" }, { symbol: "Cu", name: "銅" },
-            { symbol: "Zn", name: "亜鉛" }, { symbol: "Ag", name: "銀" },
-            { symbol: "Au", name: "金" }, { symbol: "Hg", name: "水銀" }
+            { num: 1, symbol: "H", name: "水素" }, { num: 2, symbol: "He", name: "ヘリウム" },
+            { num: 3, symbol: "Li", name: "リチウム" }, { num: 4, symbol: "Be", name: "ベリリウム" },
+            { num: 5, symbol: "B", name: "ホウ素" }, { num: 6, symbol: "C", name: "炭素" },
+            { num: 7, symbol: "N", name: "窒素" }, { num: 8, symbol: "O", name: "酸素" },
+            { num: 9, symbol: "F", name: "フッ素" }, { num: 10, symbol: "Ne", name: "ネオン" },
+            { num: 11, symbol: "Na", name: "ナトリウム" }, { num: 12, symbol: "Mg", name: "マグネシウム" },
+            { num: 13, symbol: "Al", name: "アルミニウム" }, { num: 14, symbol: "Si", name: "ケイ素" },
+            { num: 15, symbol: "P", name: "リン" }, { num: 16, symbol: "S", name: "硫黄" },
+            { num: 17, symbol: "Cl", name: "塩素" }, { num: 18, symbol: "Ar", name: "アルゴン" },
+            { num: 19, symbol: "K", name: "カリウム" }, { num: 20, symbol: "Ca", name: "カルシウム" },
+            { num: 21, symbol: "Sc", name: "スカンジウム" }, { num: 22, symbol: "Ti", name: "チタン" },
+            { num: 23, symbol: "V", name: "バナジウム" }, { num: 24, symbol: "Cr", name: "クロム" },
+            { num: 25, symbol: "Mn", name: "マンガン" }, { num: 26, symbol: "Fe", name: "鉄" },
+            { num: 27, symbol: "Co", name: "コバルト" }, { num: 28, symbol: "Ni", name: "ニッケル" },
+            { num: 29, symbol: "Cu", name: "銅" }, { num: 30, symbol: "Zn", name: "亜鉛" },
+            { num: 31, symbol: "Ga", name: "ガリウム" }, { num: 32, symbol: "Ge", name: "ゲルマニウム" },
+            { num: 33, symbol: "As", name: "ヒ素" }, { num: 34, symbol: "Se", name: "セレン" },
+            { num: 35, symbol: "Br", name: "臭素" }, { num: 36, symbol: "Kr", name: "クリプトン" },
+            { num: 37, symbol: "Rb", name: "ルビジウム" }, { num: 38, symbol: "Sr", name: "ストロンチウム" },
+            { num: 39, symbol: "Y", name: "イットリウム" }, { num: 40, symbol: "Zr", name: "ジルコニウム" },
+            { num: 41, symbol: "Nb", name: "ニオブ" }, { num: 42, symbol: "Mo", name: "モリブデン" },
+            { num: 43, symbol: "Tc", name: "テクネチウム" }, { num: 44, symbol: "Ru", name: "ルテニウム" },
+            { num: 45, symbol: "Rh", name: "ロジウム" }, { num: 46, symbol: "Pd", name: "パラジウム" },
+            { num: 47, symbol: "Ag", name: "銀" }, { num: 48, symbol: "Cd", name: "カドミウム" },
+            { num: 49, symbol: "In", name: "インジウム" }, { num: 50, symbol: "Sn", name: "スズ" },
+            { num: 51, symbol: "Sb", name: "アンチモン" }, { num: 52, symbol: "Te", name: "テルル" },
+            { num: 53, symbol: "I", name: "ヨウ素" }, { num: 54, symbol: "Xe", name: "キセノン" },
+            { num: 55, symbol: "Cs", name: "セシウム" }, { num: 56, symbol: "Ba", name: "バリウム" },
+            { num: 57, symbol: "La", name: "ランタン" }, { num: 58, symbol: "Ce", name: "セリウム" },
+            { num: 59, symbol: "Pr", name: "プラセオジム" }, { num: 60, symbol: "Nd", name: "ネオジム" },
+            { num: 61, symbol: "Pm", name: "プロメチウム" }, { num: 62, symbol: "Sm", name: "サマリウム" },
+            { num: 63, symbol: "Eu", name: "ユウロピウム" }, { num: 64, symbol: "Gd", name: "ガドリニウム" },
+            { num: 65, symbol: "Tb", name: "テルビウム" }, { num: 66, symbol: "Dy", name: "ジスプロシウム" },
+            { num: 67, symbol: "Ho", name: "ホルミウム" }, { num: 68, symbol: "Er", name: "エルビウム" },
+            { num: 69, symbol: "Tm", name: "ツリウム" }, { num: 70, symbol: "Yb", name: "イッテルビウム" },
+            { num: 71, symbol: "Lu", name: "ルテチウム" }, { num: 72, symbol: "Hf", name: "ハフニウム" },
+            { num: 73, symbol: "Ta", name: "タンタル" }, { num: 74, symbol: "W", name: "タングステン" },
+            { num: 75, symbol: "Re", name: "レニウム" }, { num: 76, symbol: "Os", name: "オスミウム" },
+            { num: 77, symbol: "Ir", name: "イリジウム" }, { num: 78, symbol: "Pt", name: "白金" },
+            { num: 79, symbol: "Au", name: "金" }, { num: 80, symbol: "Hg", name: "水銀" },
+            { num: 81, symbol: "Tl", name: "タリウム" }, { num: 82, symbol: "Pb", name: "鉛" },
+            { num: 83, symbol: "Bi", name: "ビスマス" }, { num: 84, symbol: "Po", name: "ポロニウム" },
+            { num: 85, symbol: "At", name: "アスタチン" }, { num: 86, symbol: "Rn", name: "ラドン" },
+            { num: 87, symbol: "Fr", name: "フランシウム" }, { num: 88, symbol: "Ra", name: "ラジウム" },
+            { num: 89, symbol: "Ac", name: "アクチニウム" }, { num: 90, symbol: "Th", name: "トリウム" },
+            { num: 91, symbol: "Pa", name: "プロトアクチニウム" }, { num: 92, symbol: "U", name: "ウラン" },
+            { num: 93, symbol: "Np", name: "ネプツニウム" }, { num: 94, symbol: "Pu", name: "プルトニウム" },
+            { num: 95, symbol: "Am", name: "アメリシウム" }, { num: 96, symbol: "Cm", name: "キュリウム" },
+            { num: 97, symbol: "Bk", name: "バークリウム" }, { num: 98, symbol: "Cf", name: "カリホルニウム" },
+            { num: 99, symbol: "Es", name: "アインスタイニウム" }, { num: 100, symbol: "Fm", name: "フェルミウム" },
+            { num: 101, symbol: "Md", name: "メンデレビウム" }, { num: 102, symbol: "No", name: "ノーベリウム" },
+            { num: 103, symbol: "Lr", name: "ローレンシウム" }, { num: 104, symbol: "Rf", name: "ラザフォードウム" },
+            { num: 105, symbol: "Db", name: "ドブニウム" }, { num: 106, symbol: "Sg", name: "シーボーギウム" },
+            { num: 107, symbol: "Bh", name: "ボーリウム" }, { num: 108, symbol: "Hs", name: "ハッシウム" },
+            { num: 109, symbol: "Mt", name: "マイトネリウム" }, { num: 110, symbol: "Ds", name: "ダースタッドティウム" },
+            { num: 111, symbol: "Rg", name: "レントゲニウム" }, { num: 112, symbol: "Cn", name: "コペルニシウム" },
+            { num: 113, symbol: "Nh", name: "ニホニウム" }, { num: 114, symbol: "Fl", name: "フレロビウム" },
+            { num: 115, symbol: "Mc", name: "モスコビウム" }, { num: 116, symbol: "Lv", name: "リバモリウム" },
+            { num: 117, symbol: "Ts", name: "テネシン" }, { num: 118, symbol: "Og", name: "オガネソン" }
         ];
 
         let elemScore = 0;
@@ -624,6 +672,8 @@
             if (elemTimeLeft <= 0) return;
             document.getElementById('elem-feedback').innerText = "";
             currentElement = elementsData[Math.floor(Math.random() * elementsData.length)];
+            
+            document.getElementById('elem-number').innerText = `原子番号: ${currentElement.num}`;
             document.getElementById('elem-symbol').innerText = currentElement.symbol;
 
             let options = [currentElement.name];
@@ -658,14 +708,13 @@
             }, 800);
         }
 
-        // ==================== ブラウザテスト用シミュレーター ====================
+        // ==================== 総合テスト用シミュレーター ====================
         function recordTestScoreSimulator() {
             playerName = document.getElementById('player-name-test').value.trim();
             if (!playerName) {
                 alert("プレイヤーのなまえを入力してね！");
                 return;
             }
-            // テスト用のダミースコア（例: 85点）を記録
             let dummyScore = Math.floor(Math.random() * 30) + 70;
             endGame('test', dummyScore, dummyScore, 0);
         }
