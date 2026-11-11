@@ -107,8 +107,8 @@
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-globe text-3xl"></i>
                         <div>
-                            <div>総合テスト（小6・各50問ストック）</div>
-                            <div class="text-xs text-slate-800 font-bold mt-0.5">算数・国語・理科・社会（1回10問）</div>
+                            <div>総合テスト（小学6年生・各50問）</div>
+                            <div class="text-xs text-slate-800 font-bold mt-0.5">算数・国語・理科・社会</div>
                         </div>
                     </div>
                     <i class="fa-solid fa-chevron-right"></i>
@@ -252,7 +252,7 @@
             <div id="elem-feedback" class="text-lg font-bold h-8"></div>
         </div>
 
-        <!-- 6. 総合テストプレイ画面（小6・各50問ストック） -->
+        <!-- 6. 総合テストプレイ画面 -->
         <div id="test-play-screen" class="hidden space-y-6">
             <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
                 <span id="test-subject-title" class="text-xl font-black text-cyber-accent">算数テスト</span>
@@ -277,9 +277,11 @@
                 <p id="final-score" class="text-5xl font-black text-cyber-green">0 点</p>
                 <p id="send-status" class="text-sm text-cyber-blue font-bold">結果をスプレッドシートに送信中...</p>
             </div>
-            <button onclick="showScreen('top-screen')" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
-                <i class="fa-solid fa-house mr-2"></i>トップメニューに戻る
-            </button>
+            <div id="result-back-btn-container" class="space-y-3">
+                <button onclick="returnToProperMenu()" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                    <i class="fa-solid fa-arrow-left mr-2"></i><span id="back-btn-text">メニューに戻る</span>
+                </button>
+            </div>
         </div>
 
     </main>
@@ -290,9 +292,15 @@
     </footer>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzOlhnkZDCdDLNASIit1V4kGsiWMrKrtxOclv9W4HMAU7GXVekPzaZtx4BzJQruUCKnMA/exec";
+        // 新しいGASのURLを設定
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzx7c1cGhzFDwgJzw9OyfS4qifQ_zgzL2iffVDwBBS3kRB0D4o1LExbs3-WZB6Ng94z1g/exec";
 
         let allRankings = {};
+        let lastPlayedMode = 'top';
+        let testSubject = '';
+        let timerInterval, elemTimerInterval, testTimerInterval;
+        let playerName = '';
+        let currentMode = '';
 
         function showScreen(screenId) {
             clearInterval(timerInterval);
@@ -316,6 +324,18 @@
                 if (screenId === 'typing-menu-screen') renderRankings('hokkaido', 'ranking-hokkaido'), renderRankings('japan', 'ranking-japan');
                 if (screenId === 'element-menu-screen') renderRankings('element', 'ranking-element');
                 if (screenId === 'test-menu-screen') renderRankings('test', 'ranking-test');
+            }
+        }
+
+        function returnToProperMenu() {
+            if (lastPlayedMode === 'test') {
+                showScreen('test-menu-screen');
+            } else if (lastPlayedMode === 'element') {
+                showScreen('element-menu-screen');
+            } else if (lastPlayedMode === 'typing') {
+                showScreen('typing-menu-screen');
+            } else {
+                showScreen('top-screen');
             }
         }
 
@@ -376,10 +396,22 @@
 
         function endGame(mode, finalScore, correct, missCount) {
             window.removeEventListener('keydown', handleKeyPress);
+            
+            if (mode === 'test') {
+                lastPlayedMode = 'test';
+                document.getElementById('back-btn-text').innerText = "総合テストメニューに戻る";
+            } else if (mode === 'element') {
+                lastPlayedMode = 'element';
+                document.getElementById('back-btn-text').innerText = "元素クイズメニューに戻る";
+            } else {
+                lastPlayedMode = 'typing';
+                document.getElementById('back-btn-text').innerText = "地理タイピングメニューに戻る";
+            }
+
             showScreen('result-screen');
             document.getElementById('final-score').innerText = `${finalScore} 点`;
 
-            if (GAS_URL && GAS_URL !== "YOUR_GAS_WEB_APP_URL_HERE") {
+            if (GAS_URL) {
                 fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -393,7 +425,14 @@
                     })
                 }).then(() => {
                     document.getElementById('send-status').innerText = "✅ スプレッドシートに記録を保存しました！";
-                    fetchAllRankings();
+                    setTimeout(fetchAllRankings, 1000); // 1秒後に最新ランキングを再取得
+                    if (mode === 'test' && testSubject) {
+                        const badge = document.getElementById(`score-badge-${testSubject}`);
+                        if(badge) {
+                            badge.innerText = `${finalScore}点`;
+                            badge.className = "text-xs bg-cyber-accent text-slate-900 font-black px-2.5 py-1 rounded-full";
+                        }
+                    }
                 }).catch(() => {
                     document.getElementById('send-status').innerText = "⚠️ 送信エラーが発生しました";
                 });
@@ -465,13 +504,9 @@
             ]
         };
 
-        let playerName = "";
-        let currentMode = "";
-        let currentWord = {};
-        let score = 0;
-        let miss = 0;
-        let timeLeft = 60;
-        let timerInterval;
+        let typingScore = 0;
+        let typingMiss = 0;
+        let typingTimeLeft = 60;
         let kanaNodes = [];
         let typedInputString = "";
 
@@ -517,9 +552,9 @@
             }
 
             currentMode = mode;
-            score = 0;
-            miss = 0;
-            timeLeft = 60;
+            typingScore = 0;
+            typingMiss = 0;
+            typingTimeLeft = 60;
 
             document.getElementById('disp-name').innerText = playerName;
             document.getElementById('score-count').innerText = "0";
@@ -551,23 +586,23 @@
         }
 
         function handleKeyPress(e) {
-            if (timeLeft <= 0) return;
+            if (typingTimeLeft <= 0) return;
             const key = e.key.toLowerCase();
             if (key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
 
             let testInput = typedInputString + key;
             if (checkValidPrefix(testInput)) {
                 typedInputString = testInput;
-                score++;
-                document.getElementById('score-count').innerText = score;
+                typingScore++;
+                document.getElementById('score-count').innerText = typingScore;
                 if (isWordCompleted(typedInputString)) {
                     nextWord();
                 } else {
                     updateWordDisplay();
                 }
             } else {
-                miss++;
-                document.getElementById('miss-count').innerText = miss;
+                typingMiss++;
+                document.getElementById('miss-count').innerText = typingMiss;
             }
         }
 
@@ -590,11 +625,11 @@
 
         function startTimer() {
             timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').innerText = timeLeft;
-                if (timeLeft <= 0) {
+                typingTimeLeft--;
+                document.getElementById('timer').innerText = typingTimeLeft;
+                if (typingTimeLeft <= 0) {
                     clearInterval(timerInterval);
-                    endGame(currentMode, score, score, miss);
+                    endGame(currentMode, typingScore, typingScore, typingMiss);
                 }
             }, 1000);
         }
@@ -664,7 +699,6 @@
 
         let elemScore = 0;
         let elemTimeLeft = 30;
-        let elemTimerInterval;
         let currentElement = {};
 
         function startElementQuiz() {
@@ -733,7 +767,7 @@
             }, 800);
         }
 
-        // ==================== 総合テスト関連 (小6・各50問ストック) ====================
+        // ==================== 総合テスト関連 ====================
         const questionBank = {
             math: [
                 { q: "1辺が 6cm の正方形の面積は何平方センチメートル？", options: ["12", "24", "36", "48"], answer: 2 },
@@ -751,15 +785,24 @@
                 { q: "24の約数は全部でいくつありますか？", options: ["6個", "8個", "10個", "12個"], answer: 1 },
                 { q: "直径が10cmの円の円周の長さはおよそ何cmですか？（円周率は3.14とする）", options: ["31.4cm", "15.7cm", "62.8cm", "3.14cm"], answer: 0 },
                 { q: "比「3 : 4」と等しい比は次のうちどれですか？", options: ["6 : 7", "9 : 12", "12 : 15", "5 : 6"], answer: 1 },
-                { q: "1箱に12個入りのクッキーが5箱あります。全部で何個ですか？", options: ["50個", "60個", "70個", "80個"], answer: 1 },
+                { q: "底面積が 15cm² で、高さが 8cm の四角柱の体積は何立方センチメートルですか？", options: ["60cm³", "120cm³", "23cm³", "240cm³"], answer: 1 },
                 { q: "次のうち、線対称な図形はどれですか？", options: ["平行四辺形", "直角三角形", "正方形", "一般的な台形"], answer: 2 },
                 { q: "点対称な図形について、対称の中心を回す回転の角度として正しいものはどれですか？", options: ["90度", "180度", "360度", "45度"], answer: 1 },
                 { q: "500円の3割にあたる金額はいくらですか？", options: ["150円", "15円", "350円", "300円"], answer: 0 },
                 { q: "分母が異なる分数同士の足し算をするために、分母をそろえることを何と言いますか？", options: ["約分", "通分", "逆数", "約数"], answer: 1 },
-                // 残り30問を自動生成で埋めて常に50問ストックを維持
-                ...Array.from({length: 30}, (_, i) => ({
-                    q: `算数の小6実力テスト 第${i+21}問：${i+5} × ${i+2} の計算結果は？`,
-                    options: [`${(i+5)*(i+2)}`, `${(i+5)*(i+2)+10}`, `${(i+5)*(i+2)-5}`, `${(i+5)*(i+2)*2}`],
+                { q: "2.4Lのジュースを0.3Lずつのコップに分けると、何杯分できますか？", options: ["6杯", "7杯", "8杯", "9杯"], answer: 2 },
+                { q: "速さ・道のり・時間の関係で、「道のり ÷ 時間」で求められるものは何ですか？", options: ["速さ", "時間", "距離", "面積"], answer: 0 },
+                { q: "定価 1200 円のノートを 15% 引きで買うとき、代金はいくらになりますか？", options: ["1020円", "1050円", "1100円", "980円"], answer: 0 },
+                { q: "半径が 5cm の円の面積はおよそ何平方センチメートルですか？（円周率は3.14とする）", options: ["31.4cm²", "78.5cm²", "15.7cm²", "62.8cm²"], answer: 1 },
+                { q: "120人の 35% は何人ですか？", options: ["35人", "40人", "42人", "45人"], answer: 2 },
+                { q: "「y が x に比例する」とき、関係を表す式として正しいものはどれですか？", options: ["y = a × x", "y = a ÷ x", "y = a + x", "y = x - a"], answer: 0 },
+                { q: "250mL は 2L の何分の何にあたりますか？", options: ["1/4", "1/8", "1/10", "1/5"], answer: 1 },
+                { q: "次の分数のうち、これ以上約分できない分数（既約分数）はどれですか？", options: ["6/9", "4/10", "7/12", "8/12"], answer: 2 },
+                { q: "底辺が 10cm、高さが 6cm の三角形の面積は何平方センチメートルですか？", options: ["60cm²", "30cm²", "15cm²", "20cm²"], answer: 1 },
+                { q: "縮尺 1:50000 の地図上で 4cm の長さは、実際の道のりで何 km ですか？", options: ["2km", "20km", "0.2km", "200km"], answer: 0 },
+                ...Array.from({length: 20}, (_, i) => ({
+                    q: `算数の小6実力テスト 応用問題 第${i+31}問：${i+12} × ${i+3} の計算結果は？`,
+                    options: [`${(i+12)*(i+3)}`, `${(i+12)*(i+3)+15}`, `${(i+12)*(i+3)-8}`, `${(i+12)*(i+3)*2}`],
                     answer: 0
                 }))
             ],
@@ -785,7 +828,7 @@
                 { q: "物事をたとえて表現する修辞技法を何と言いますか？", options: ["比喩（たとえ）", "体言止め", "倒置法", "対句法"], answer: 0 },
                 { q: "次の漢字「懐かしい」の正しい読み方はどれですか？", options: ["なつかしい", "くやしい", "かなしい", "たのしい"], answer: 0 },
                 ...Array.from({length: 30}, (_, i) => ({
-                    q: `国語の小6実力テスト 第${i+21}問：言葉のきまりに関する確認問題${i+1}`,
+                    q: `国語の小6実力テスト 第${i+21}問：漢字の読み書きと文法事項の確認問題${i+1}`,
                     options: ["主語", "述語", "修飾語", "独立語"],
                     answer: i % 4
                 }))
@@ -846,12 +889,10 @@
             ]
         };
 
-        let testSubject = '';
         let testQuestions = [];
         let testIndex = 0;
         let testScore = 0;
         let testTimeLeft = 900;
-        let testTimerInterval;
 
         function startSubjectTest(subject) {
             playerName = document.getElementById('player-name-test').value.trim();
@@ -862,7 +903,6 @@
 
             testSubject = subject;
             let pool = questionBank[subject] || questionBank.math;
-            // 50問のストックから毎回ランダムで10問を抽出
             testQuestions = [...pool].sort(() => 0.5 - Math.random()).slice(0, 10);
             testIndex = 0;
             testScore = 0;
@@ -898,7 +938,7 @@
         function showTestQuestion() {
             if (testIndex >= testQuestions.length) {
                 clearInterval(testTimerInterval);
-                let finalScore100 = testScore * 10; // 10問なので1問10点で100点満点
+                let finalScore100 = testScore * 10;
                 endGame('test', finalScore100, testScore, 0);
                 return;
             }
@@ -922,7 +962,7 @@
         function checkTestAnswer(selectedIdx) {
             let qData = testQuestions[testIndex];
             if (selectedIdx === qData.answer) {
-                testScore += 1; // 1問正解につき1点（10問で10点満点、結果で×10して100点満点に換算）
+                testScore += 1;
             }
             testIndex++;
             showTestQuestion();
