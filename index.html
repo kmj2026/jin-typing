@@ -58,7 +58,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-4 font-sans">
 
-    <!-- 共通ヘッダー（トップへ戻るボタン付き） -->
+    <!-- 共通ヘッダー -->
     <header class="w-full max-w-2xl flex items-center justify-between py-4">
         <button onclick="showScreen('top-screen')" id="home-btn" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyber-accent rounded-xl border border-cyber-accent font-bold text-sm transition">
             <i class="fa-solid fa-house mr-1"></i>トップに戻る
@@ -68,7 +68,7 @@
                 🚀 総合学習ポータル 🚀
             </h1>
         </div>
-        <div class="w-20"></div> <!-- バランス用 -->
+        <div class="w-20"></div>
     </header>
 
     <!-- メインエリア -->
@@ -81,7 +81,6 @@
             </h2>
             
             <div class="grid grid-cols-1 gap-4">
-                <!-- タイピングモードへ -->
                 <button onclick="showScreen('typing-menu-screen')" class="pop-button flex items-center justify-between p-5 bg-sky-500 hover:bg-sky-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-keyboard text-3xl"></i>
@@ -93,8 +92,7 @@
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
 
-                <!-- 元素クイズモードへ -->
-                <button onclick="showScreen('element-quiz-screen'); startElementQuiz();" class="pop-button flex items-center justify-between p-5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
+                <button onclick="showScreen('element-menu-screen')" class="pop-button flex items-center justify-between p-5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-flask text-3xl"></i>
                         <div>
@@ -105,39 +103,28 @@
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
 
-                <!-- ブラウザテストへ（外部リンク） -->
-                <a href="https://kmj2026.github.io/jin-test/" target="_blank" class="pop-button flex items-center justify-between p-5 bg-purple-500 hover:bg-purple-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
+                <button onclick="showScreen('test-menu-screen')" class="pop-button flex items-center justify-between p-5 bg-purple-500 hover:bg-purple-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-globe text-3xl"></i>
                         <div>
                             <div>ブラウザテスト</div>
-                            <div class="text-xs text-slate-800 font-bold mt-0.5">外部テストページを開く (jin-test)</div>
+                            <div class="text-xs text-slate-800 font-bold mt-0.5">外部テストページ（jin-test）</div>
                         </div>
                     </div>
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
-            </div>
-
-            <!-- ハイスコアランキング（トップ画面に常時表示） -->
-            <div class="mt-8 bg-slate-900/90 p-5 rounded-2xl border-2 border-cyber-accent space-y-3 text-left">
-                <h3 class="text-lg font-black text-cyber-accent flex items-center justify-center">
-                    <i class="fa-solid fa-crown mr-2 text-yellow-400"></i>タイピング ハイスコアランキング TOP 5
-                </h3>
-                <div id="ranking-list" class="space-y-2">
-                    <p class="text-center text-sm text-slate-400 py-2">ランキングを読み込み中...</p>
-                </div>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
         </div>
 
-        <!-- 1. タイピングコース選択画面 -->
+        <!-- 1. タイピングコース選択＆ランキング画面 -->
         <div id="typing-menu-screen" class="hidden space-y-6">
             <h2 class="text-2xl font-black text-center text-white mb-2">
-                <i class="fa-solid fa-keyboard text-cyber-accent mr-2"></i>タイピングコースを選んでね！
+                <i class="fa-solid fa-keyboard text-cyber-accent mr-2"></i>地理タイピング
             </h2>
             
             <div class="space-y-2 text-left">
                 <label class="text-sm font-bold text-cyber-blue"><i class="fa-solid fa-user mr-2"></i>プレイヤーのなまえ：</label>
-                <input type="text" id="player-name" placeholder="なまえを入力（例: じん）" 
+                <input type="text" id="player-name-typing" placeholder="なまえを入力（例: じん）" 
                     class="w-full p-4 rounded-2xl bg-slate-900 border-2 border-cyber-blue text-white font-bold text-xl text-center focus:outline-none focus:border-cyber-accent">
             </div>
 
@@ -151,9 +138,70 @@
                     <span class="text-xs text-slate-800 font-bold mt-1">全国47都道府県</span>
                 </button>
             </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-sky-500/50 space-y-2">
+                    <h3 class="text-sm font-black text-sky-400 text-center"><i class="fa-solid fa-crown mr-1"></i>北海道コース TOP 5</h3>
+                    <div id="ranking-hokkaido" class="space-y-1.5 text-xs">読み込み中...</div>
+                </div>
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-amber-500/50 space-y-2">
+                    <h3 class="text-sm font-black text-amber-400 text-center"><i class="fa-solid fa-crown mr-1"></i>全国コース TOP 5</h3>
+                    <div id="ranking-japan" class="space-y-1.5 text-xs">読み込み中...</div>
+                </div>
+            </div>
         </div>
 
-        <!-- 2. タイピングゲームプレイ画面 -->
+        <!-- 2. 元素クイズコース選択＆ランキング画面 -->
+        <div id="element-menu-screen" class="hidden space-y-6">
+            <h2 class="text-2xl font-black text-center text-white mb-2">
+                <i class="fa-solid fa-flask text-cyber-accent mr-2"></i>元素の名前クイズ
+            </h2>
+            
+            <div class="space-y-2 text-left">
+                <label class="text-sm font-bold text-cyber-blue"><i class="fa-solid fa-user mr-2"></i>プレイヤーのなまえ：</label>
+                <input type="text" id="player-name-element" placeholder="なまえを入力（例: じん）" 
+                    class="w-full p-4 rounded-2xl bg-slate-900 border-2 border-cyber-blue text-white font-bold text-xl text-center focus:outline-none focus:border-cyber-accent">
+            </div>
+
+            <button onclick="startElementQuiz()" class="pop-button w-full py-5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                <i class="fa-solid fa-play mr-2"></i>元素クイズをスタート！
+            </button>
+
+            <div class="bg-slate-900/90 p-4 rounded-2xl border border-emerald-500/50 space-y-2 mt-4">
+                <h3 class="text-sm font-black text-emerald-400 text-center"><i class="fa-solid fa-crown mr-1"></i>元素クイズ TOP 5</h3>
+                <div id="ranking-element" class="space-y-1.5 text-xs">読み込み中...</div>
+            </div>
+        </div>
+
+        <!-- 3. ブラウザテスト選択＆ランキング画面 -->
+        <div id="test-menu-screen" class="hidden space-y-6 text-center">
+            <h2 class="text-2xl font-black text-white mb-2">
+                <i class="fa-solid fa-globe text-cyber-accent mr-2"></i>ブラウザテスト (jin-test)
+            </h2>
+            
+            <div class="space-y-2 text-left">
+                <label class="text-sm font-bold text-cyber-blue"><i class="fa-solid fa-user mr-2"></i>プレイヤーのなまえ：</label>
+                <input type="text" id="player-name-test" placeholder="なまえを入力（例: じん）" 
+                    class="w-full p-4 rounded-2xl bg-slate-900 border-2 border-cyber-blue text-white font-bold text-xl text-center focus:outline-none focus:border-cyber-accent">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <a href="https://kmj2026.github.io/jin-test/" target="_blank" class="pop-button flex items-center justify-center p-5 bg-purple-500 hover:bg-purple-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                    <span><i class="fa-solid fa-arrow-up-right-from-square mr-2"></i>テストページを開く</span>
+                </a>
+                <button onclick="recordTestScoreSimulator()" class="pop-button flex flex-col items-center justify-center p-4 bg-slate-800 hover:bg-slate-700 text-cyber-accent border border-cyber-accent rounded-2xl">
+                    <span class="font-bold text-sm">【テスト用】スコアを記録する</span>
+                    <span class="text-xs text-slate-400 mt-1">（動作確認用シミュレーター）</span>
+                </button>
+            </div>
+
+            <div class="bg-slate-900/90 p-4 rounded-2xl border border-purple-500/50 space-y-2 mt-4 text-left">
+                <h3 class="text-sm font-black text-purple-400 text-center"><i class="fa-solid fa-crown mr-1"></i>ブラウザテスト TOP 5</h3>
+                <div id="ranking-test" class="space-y-1.5 text-xs">読み込み中...</div>
+            </div>
+        </div>
+
+        <!-- 4. タイピングゲームプレイ画面 -->
         <div id="game-screen" class="hidden space-y-6">
             <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
                 <span id="current-mode-title" class="text-xl font-black text-cyber-accent">北海道市町村コース</span>
@@ -178,35 +226,33 @@
             </div>
         </div>
 
-        <!-- 3. タイピング結果画面 -->
+        <!-- 5. 元素クイズプレイ画面 -->
+        <div id="element-game-screen" class="hidden space-y-6 text-center">
+            <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                <span class="text-xl font-black text-cyber-accent"><i class="fa-solid fa-flask mr-2"></i>元素の名前クイズ (残り <span id="elem-timer" class="font-teko text-2xl text-cyber-pink">30</span>秒)</span>
+                <span class="text-sm font-bold text-cyber-green">正解数: <span id="elem-score" class="text-xl font-black">0</span></span>
+            </div>
+
+            <div class="bg-slate-900 p-8 rounded-2xl border-2 border-emerald-500 space-y-4">
+                <div id="elem-symbol" class="text-6xl font-black text-emerald-400 font-mono tracking-wider">H</div>
+                <div class="text-sm text-slate-400 font-bold">この元素の名前はなにかな？</div>
+                
+                <div id="elem-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2"></div>
+            </div>
+            <div id="elem-feedback" class="text-lg font-bold h-8"></div>
+        </div>
+
+        <!-- 6. 結果画面（共通） -->
         <div id="result-screen" class="hidden text-center space-y-6">
             <h2 class="text-3xl font-black text-cyber-accent">🎉 タイムアップ！お疲れ様！ 🎉</h2>
             <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 space-y-3">
-                <p class="text-slate-400 font-bold">今回のスコア（正打数）</p>
+                <p class="text-slate-400 font-bold">今回のスコア</p>
                 <p id="final-score" class="text-5xl font-black text-cyber-green">0 点</p>
                 <p id="send-status" class="text-sm text-cyber-blue font-bold">結果をスプレッドシートに送信中...</p>
             </div>
             <button onclick="showScreen('top-screen')" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
                 <i class="fa-solid fa-house mr-2"></i>トップメニューに戻る
             </button>
-        </div>
-
-        <!-- 4. 元素クイズ画面 -->
-        <div id="element-quiz-screen" class="hidden space-y-6 text-center">
-            <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
-                <span class="text-xl font-black text-cyber-accent"><i class="fa-solid fa-flask mr-2"></i>元素の名前クイズ</span>
-                <span class="text-sm font-bold text-cyber-green">スコア: <span id="elem-score" class="text-xl font-black">0</span>点</span>
-            </div>
-
-            <div class="bg-slate-900 p-8 rounded-2xl border-2 border-emerald-500 space-y-4">
-                <div id="elem-symbol" class="text-6xl font-black text-emerald-400 font-mono tracking-wider">H</div>
-                <div class="text-sm text-slate-400 font-bold">この元素の「漢字・ひらがな（またはアルファベット）」の名前はなにかな？</div>
-                
-                <div id="elem-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                    <!-- 選択肢がここに動的に入ります -->
-                </div>
-            </div>
-            <div id="elem-feedback" class="text-lg font-bold h-8"></div>
         </div>
 
     </main>
@@ -219,73 +265,83 @@
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzOlhnkZDCdDLNASIit1V4kGsiWMrKrtxOclv9W4HMAU7GXVekPzaZtx4BzJQruUCKnMA/exec";
 
+        let allRankings = {};
+
         // 画面切り替え関数
         function showScreen(screenId) {
             clearInterval(timerInterval);
+            clearInterval(elemTimerInterval);
             window.removeEventListener('keydown', handleKeyPress);
 
-            const screens = ['top-screen', 'typing-menu-screen', 'game-screen', 'result-screen', 'element-quiz-screen'];
+            const screens = [
+                'top-screen', 'typing-menu-screen', 'element-menu-screen', 'test-menu-screen', 
+                'game-screen', 'element-game-screen', 'result-screen'
+            ];
             screens.forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(screenId).classList.remove('hidden');
 
-            // ホームボタンの表示/非表示制御
             if (screenId === 'top-screen') {
                 document.getElementById('home-btn').classList.add('hidden');
-                loadRanking(); // トップに戻ったときにランキングを再読み込み
             } else {
                 document.getElementById('home-btn').classList.remove('hidden');
+                // メニュー画面に戻ったときに対応するランキングを再描画
+                if (screenId === 'typing-menu-screen') renderRankings('hokkaido', 'ranking-hokkaido'), renderRankings('japan', 'ranking-japan');
+                if (screenId === 'element-menu-screen') renderRankings('element', 'ranking-element');
+                if (screenId === 'test-menu-screen') renderRankings('test', 'ranking-test');
             }
         }
 
-        // ページ読み込み時にランキングを取得
+        // ページ読み込み時に全ランキングを取得
         window.addEventListener('DOMContentLoaded', () => {
-            loadRanking();
+            fetchAllRankings();
         });
 
-        function loadRanking() {
+        function fetchAllRankings() {
             fetch(GAS_URL)
                 .then(response => response.json())
                 .then(data => {
-                    const rankingList = document.getElementById('ranking-list');
-                    if (!data || data.length === 0) {
-                        rankingList.innerHTML = '<p class="text-center text-xs text-slate-400 py-2">まだ記録がありません。一番乗りを目指そう！</p>';
-                        return;
-                    }
-
-                    let html = '';
-                    data.forEach((item, index) => {
-                        let rankClass = "text-slate-300";
-                        let badgeIcon = `<span class="font-teko text-lg px-2">${index + 1}位</span>`;
-                        if (index === 0) {
-                            rankClass = "text-yellow-300 bg-yellow-500/10 border-yellow-500/30";
-                            badgeIcon = `<i class="fa-solid fa-crown text-yellow-400 mr-1"></i>1位`;
-                        } else if (index === 1) {
-                            rankClass = "text-slate-200 bg-slate-400/10 border-slate-400/30";
-                            badgeIcon = `<i class="fa-solid fa-medal text-slate-300 mr-1"></i>2位`;
-                        } else if (index === 2) {
-                            rankClass = "text-amber-500 bg-amber-600/10 border-amber-600/30";
-                            badgeIcon = `<i class="fa-solid fa-medal text-amber-500 mr-1"></i>3位`;
-                        }
-
-                        html += `
-                            <div class="flex items-center justify-between p-2.5 rounded-xl border border-slate-700 bg-slate-950/50 ${rankClass}">
-                                <div class="flex items-center space-x-3 font-bold text-sm">
-                                    <span class="w-12 text-center">${badgeIcon}</span>
-                                    <span class="text-white">${escapeHtml(item.name)}</span>
-                                </div>
-                                <div class="font-teko text-2xl font-bold tracking-wider text-cyber-green">
-                                    ${item.score} <span class="text-xs font-sans text-slate-400">点</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    rankingList.innerHTML = html;
+                    allRankings = data || {};
+                    // 各メニューのランキングを描画
+                    renderRankings('hokkaido', 'ranking-hokkaido');
+                    renderRankings('japan', 'ranking-japan');
+                    renderRankings('element', 'ranking-element');
+                    renderRankings('test', 'ranking-test');
                 })
                 .catch(() => {
-                    document.getElementById('ranking-list').innerHTML = '<p class="text-center text-xs text-pink-400 py-2">ランキングの読み込みに失敗しました</p>';
+                    ['ranking-hokkaido', 'ranking-japan', 'ranking-element', 'ranking-test'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) el.innerHTML = '<span class="text-pink-400">読み込み失敗</span>';
+                    });
                 });
+        }
+
+        function renderRankings(modeKey, elementId) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+            const data = allRankings[modeKey];
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-1">まだ記録がありません</p>';
+                return;
+            }
+
+            let html = '';
+            data.forEach((item, index) => {
+                let badge = `${index + 1}位`;
+                let color = "text-slate-300";
+                if (index === 0) badge = "👑1位", color = "text-yellow-300 font-bold";
+                else if (index === 1) badge = "🥈2位", color = "text-slate-200";
+                else if (index === 2) badge = "🥉3位", color = "text-amber-500";
+
+                html += `
+                    <div class="flex justify-between items-center p-1.5 rounded bg-slate-950/60 border border-slate-800 ${color}">
+                        <span>${badge} ${escapeHtml(item.name)}</span>
+                        <span class="font-teko text-lg text-cyber-green">${item.score}点</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         function escapeHtml(str) {
@@ -402,7 +458,7 @@
         }
 
         function startTypingGame(mode) {
-            playerName = document.getElementById('player-name').value.trim();
+            playerName = document.getElementById('player-name-typing').value.trim();
             if (!playerName) {
                 alert("プレイヤーのなまえを入力してね！");
                 return;
@@ -486,15 +542,15 @@
                 document.getElementById('timer').innerText = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    endGame();
+                    endGame(currentMode, score, score, miss);
                 }
             }, 1000);
         }
 
-        function endGame() {
+        function endGame(mode, finalScore, correct, missCount) {
             window.removeEventListener('keydown', handleKeyPress);
             showScreen('result-screen');
-            document.getElementById('final-score').innerText = `${score} 点`;
+            document.getElementById('final-score').innerText = `${finalScore} 点`;
 
             if (GAS_URL && GAS_URL !== "YOUR_GAS_WEB_APP_URL_HERE") {
                 fetch(GAS_URL, {
@@ -502,13 +558,15 @@
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        name: `${playerName} (${currentMode === 'hokkaido' ? '北海道' : '全国'})`,
-                        score: score,
-                        correct: score,
-                        miss: miss
+                        mode: mode,
+                        name: playerName,
+                        score: finalScore,
+                        correct: correct,
+                        miss: missCount
                     })
                 }).then(() => {
                     document.getElementById('send-status').innerText = "✅ スプレッドシートに記録を保存しました！";
+                    fetchAllRankings(); // 最新ランキングを再取得
                 }).catch(() => {
                     document.getElementById('send-status').innerText = "⚠️ 送信エラーが発生しました";
                 });
@@ -532,22 +590,42 @@
         ];
 
         let elemScore = 0;
+        let elemTimeLeft = 30;
+        let elemTimerInterval;
         let currentElement = {};
 
         function startElementQuiz() {
+            playerName = document.getElementById('player-name-element').value.trim();
+            if (!playerName) {
+                alert("プレイヤーのなまえを入力してね！");
+                return;
+            }
+
             elemScore = 0;
+            elemTimeLeft = 30;
             document.getElementById('elem-score').innerText = elemScore;
+            document.getElementById('elem-timer').innerText = elemTimeLeft;
             document.getElementById('elem-feedback').innerText = "";
+
+            showScreen('element-game-screen');
             nextElementQuiz();
+
+            elemTimerInterval = setInterval(() => {
+                elemTimeLeft--;
+                document.getElementById('elem-timer').innerText = elemTimeLeft;
+                if (elemTimeLeft <= 0) {
+                    clearInterval(elemTimerInterval);
+                    endGame('element', elemScore, elemScore, 0);
+                }
+            }, 1000);
         }
 
         function nextElementQuiz() {
+            if (elemTimeLeft <= 0) return;
             document.getElementById('elem-feedback').innerText = "";
-            // ランダムに問題を選ぶ
             currentElement = elementsData[Math.floor(Math.random() * elementsData.length)];
             document.getElementById('elem-symbol').innerText = currentElement.symbol;
 
-            // 正解を含めた4つの選択肢を作る
             let options = [currentElement.name];
             while (options.length < 4) {
                 let randomElem = elementsData[Math.floor(Math.random() * elementsData.length)].name;
@@ -555,10 +633,8 @@
                     options.push(randomElem);
                 }
             }
-            // 選択肢をシャッフル
             options.sort(() => Math.random() - 0.5);
 
-            // 画面にボタンとして配置
             let html = '';
             options.forEach(opt => {
                 html += `<button onclick="checkElementAnswer('${opt}')" class="pop-button p-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl border border-emerald-500/50">${opt}</button>`;
@@ -567,19 +643,31 @@
         }
 
         function checkElementAnswer(selected) {
+            if (elemTimeLeft <= 0) return;
             const feedback = document.getElementById('elem-feedback');
             if (selected === currentElement.name) {
-                elemScore += 10;
+                elemScore += 1;
                 document.getElementById('elem-score').innerText = elemScore;
-                feedback.innerHTML = `<span class="text-cyber-green">⭕ せいかい！すばらしい！</span>`;
+                feedback.innerHTML = `<span class="text-cyber-green">⭕ せいかい！</span>`;
             } else {
-                feedback.innerHTML = `<span class="text-cyber-pink">❌ ざんねん！正解は「${currentElement.name}」だよ</span>`;
+                feedback.innerHTML = `<span class="text-cyber-pink">❌ 正解は「${currentElement.name}」</span>`;
             }
 
-            // 1.5秒後に次の問題へ
             setTimeout(() => {
                 nextElementQuiz();
-            }, 1500);
+            }, 800);
+        }
+
+        // ==================== ブラウザテスト用シミュレーター ====================
+        function recordTestScoreSimulator() {
+            playerName = document.getElementById('player-name-test').value.trim();
+            if (!playerName) {
+                alert("プレイヤーのなまえを入力してね！");
+                return;
+            }
+            // テスト用のダミースコア（例: 85点）を記録
+            let dummyScore = Math.floor(Math.random() * 30) + 70;
+            endGame('test', dummyScore, dummyScore, 0);
         }
     </script>
 </body>
