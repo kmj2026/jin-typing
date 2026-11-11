@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地名タイピングマスター</title>
+    <title>仁くん用タイピングゲーム</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -61,7 +61,7 @@
     <!-- ヘッダー -->
     <header class="w-full max-w-2xl text-center py-4">
         <h1 class="text-4xl md:text-5xl font-black text-cyber-accent tracking-wider drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)]">
-            ⌨️ 地名タイピングマスター ⌨️
+            ⌨️ 仁くん用タイピングゲーム ⌨️
         </h1>
         <p class="text-sm text-cyber-blue font-bold mt-1">キーボードを叩いて地理を極めよう！</p>
     </header>
@@ -142,7 +142,7 @@
     </footer>
 
     <script>
-        // ★ここにGoogle Apps Script（GAS）のWEBアプリURLを貼り付けます★
+        // ★すでに設定済みのGoogle Apps Script（GAS）のWEBアプリURLが入ります（そのままでOK）★
         const GAS_URL = "YOUR_GAS_WEB_APP_URL_HERE";
 
         // 単語データベース
@@ -259,7 +259,7 @@
             document.getElementById('result-screen').classList.remove('hidden');
             document.getElementById('final-score').innerText = `${score} 点`;
 
-            if (GAS_URL && GAS_URL !== "https://script.google.com/macros/s/AKfycbzrrGhvDov053UMvMh8r7KTlUWILU8XQhOGJyzSnmP-GWZ1BgSM4fl8is2GolLiQsTWTQ/exec") {
+            if (GAS_URL && GAS_URL !== "YOUR_GAS_WEB_APP_URL_HERE") {
                 fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
