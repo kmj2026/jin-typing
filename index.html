@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>仁くん用タイピング</title>
+    <title>総合学習ポータル ＆ タイピング</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -58,21 +58,81 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-4 font-sans">
 
-    <!-- ヘッダー -->
-    <header class="w-full max-w-2xl text-center py-4">
-        <h1 class="text-4xl md:text-5xl font-black text-cyber-accent tracking-wider drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)]">
-            ⌨️ 仁くん用タイピング ⌨️
-        </h1>
-        <p class="text-sm text-cyber-blue font-bold mt-1">キーボードを叩いて地理を極めよう！</p>
+    <!-- 共通ヘッダー（トップへ戻るボタン付き） -->
+    <header class="w-full max-w-2xl flex items-center justify-between py-4">
+        <button onclick="showScreen('top-screen')" id="home-btn" class="hidden px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyber-accent rounded-xl border border-cyber-accent font-bold text-sm transition">
+            <i class="fa-solid fa-house mr-1"></i>トップに戻る
+        </button>
+        <div class="text-center flex-1">
+            <h1 class="text-3xl md:text-4xl font-black text-cyber-accent tracking-wider drop-shadow">
+                🚀 総合学習ポータル 🚀
+            </h1>
+        </div>
+        <div class="w-20"></div> <!-- バランス用 -->
     </header>
 
     <!-- メインエリア -->
-    <main class="w-full max-w-2xl bg-cyber-card rounded-3xl p-6 md:p-8 pop-card mb-6 space-y-8">
+    <main class="w-full max-w-2xl bg-cyber-card rounded-3xl p-6 md:p-8 pop-card mb-6 space-y-6">
 
-        <!-- 1. なまえ入力＆モード選択画面 -->
-        <div id="start-screen" class="space-y-6">
+        <!-- 0. トップメニュー画面 -->
+        <div id="top-screen" class="space-y-6 text-center">
+            <h2 class="text-2xl font-black text-white mb-4">
+                <i class="fa-solid fa-compass text-cyber-accent mr-2"></i>やりたいモードを選んでね！
+            </h2>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <!-- タイピングモードへ -->
+                <button onclick="showScreen('typing-menu-screen')" class="pop-button flex items-center justify-between p-5 bg-sky-500 hover:bg-sky-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
+                    <div class="flex items-center space-x-4">
+                        <i class="fa-solid fa-keyboard text-3xl"></i>
+                        <div>
+                            <div>地理タイピングゲーム</div>
+                            <div class="text-xs text-slate-800 font-bold mt-0.5">北海道・全国の市町村/都道府県</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+
+                <!-- 元素クイズモードへ -->
+                <button onclick="showScreen('element-quiz-screen'); startElementQuiz();" class="pop-button flex items-center justify-between p-5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
+                    <div class="flex items-center space-x-4">
+                        <i class="fa-solid fa-flask text-3xl"></i>
+                        <div>
+                            <div>元素の名前クイズ</div>
+                            <div class="text-xs text-slate-800 font-bold mt-0.5">化学の元素記号＆名前を覚える！</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+
+                <!-- ブラウザテストへ（外部リンク） -->
+                <a href="https://kmj2026.github.io/jin-test/" target="_blank" class="pop-button flex items-center justify-between p-5 bg-purple-500 hover:bg-purple-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white text-left">
+                    <div class="flex items-center space-x-4">
+                        <i class="fa-solid fa-globe text-3xl"></i>
+                        <div>
+                            <div>ブラウザテスト</div>
+                            <div class="text-xs text-slate-800 font-bold mt-0.5">外部テストページを開く (jin-test)</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+            </div>
+
+            <!-- ハイスコアランキング（トップ画面に常時表示） -->
+            <div class="mt-8 bg-slate-900/90 p-5 rounded-2xl border-2 border-cyber-accent space-y-3 text-left">
+                <h3 class="text-lg font-black text-cyber-accent flex items-center justify-center">
+                    <i class="fa-solid fa-crown mr-2 text-yellow-400"></i>タイピング ハイスコアランキング TOP 5
+                </h3>
+                <div id="ranking-list" class="space-y-2">
+                    <p class="text-center text-sm text-slate-400 py-2">ランキングを読み込み中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. タイピングコース選択画面 -->
+        <div id="typing-menu-screen" class="hidden space-y-6">
             <h2 class="text-2xl font-black text-center text-white mb-2">
-                <i class="fa-solid fa-gamepad text-cyber-accent mr-2"></i>プレイヤー情報とコースを選んでね！
+                <i class="fa-solid fa-keyboard text-cyber-accent mr-2"></i>タイピングコースを選んでね！
             </h2>
             
             <div class="space-y-2 text-left">
@@ -81,32 +141,19 @@
                     class="w-full p-4 rounded-2xl bg-slate-900 border-2 border-cyber-blue text-white font-bold text-xl text-center focus:outline-none focus:border-cyber-accent">
             </div>
 
-            <div class="space-y-3 pt-2">
-                <label class="text-sm font-bold text-cyber-blue"><i class="fa-solid fa-map-location-dot mr-2"></i>チャレンジするコース：</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button onclick="startGame('hokkaido')" class="pop-button flex flex-col items-center justify-center p-5 bg-sky-500 hover:bg-sky-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
-                        <span><i class="fa-solid fa-mountain-sun mr-2"></i>北海道市町村コース</span>
-                        <span class="text-xs text-slate-800 font-bold mt-1">全179市町村 完全網羅！</span>
-                    </button>
-                    <button onclick="startGame('japan')" class="pop-button flex flex-col items-center justify-center p-5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
-                        <span><i class="fa-solid fa-map mr-2"></i>全国都道府県コース</span>
-                        <span class="text-xs text-slate-800 font-bold mt-1">全国47都道府県</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- ランキングボード表示エリア -->
-            <div class="mt-8 bg-slate-900/90 p-5 rounded-2xl border-2 border-cyber-accent space-y-3">
-                <h3 class="text-lg font-black text-cyber-accent flex items-center justify-center">
-                    <i class="fa-solid fa-crown mr-2 text-yellow-400"></i>ハイスコアランキング TOP 5
-                </h3>
-                <div id="ranking-list" class="space-y-2">
-                    <p class="text-center text-sm text-slate-400 py-2">ランキングを読み込み中...</p>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <button onclick="startTypingGame('hokkaido')" class="pop-button flex flex-col items-center justify-center p-5 bg-sky-500 hover:bg-sky-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                    <span><i class="fa-solid fa-mountain-sun mr-2"></i>北海道市町村コース</span>
+                    <span class="text-xs text-slate-800 font-bold mt-1">全179市町村 完全網羅！</span>
+                </button>
+                <button onclick="startTypingGame('japan')" class="pop-button flex flex-col items-center justify-center p-5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                    <span><i class="fa-solid fa-map mr-2"></i>全国都道府県コース</span>
+                    <span class="text-xs text-slate-800 font-bold mt-1">全国47都道府県</span>
+                </button>
             </div>
         </div>
 
-        <!-- 2. タイピングゲーム画面 -->
+        <!-- 2. タイピングゲームプレイ画面 -->
         <div id="game-screen" class="hidden space-y-6">
             <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
                 <span id="current-mode-title" class="text-xl font-black text-cyber-accent">北海道市町村コース</span>
@@ -131,7 +178,7 @@
             </div>
         </div>
 
-        <!-- 3. 結果画面 -->
+        <!-- 3. タイピング結果画面 -->
         <div id="result-screen" class="hidden text-center space-y-6">
             <h2 class="text-3xl font-black text-cyber-accent">🎉 タイムアップ！お疲れ様！ 🎉</h2>
             <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 space-y-3">
@@ -139,9 +186,27 @@
                 <p id="final-score" class="text-5xl font-black text-cyber-green">0 点</p>
                 <p id="send-status" class="text-sm text-cyber-blue font-bold">結果をスプレッドシートに送信中...</p>
             </div>
-            <button onclick="location.reload()" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
-                <i class="fa-solid fa-house mr-2"></i>メニューに戻る
+            <button onclick="showScreen('top-screen')" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                <i class="fa-solid fa-house mr-2"></i>トップメニューに戻る
             </button>
+        </div>
+
+        <!-- 4. 元素クイズ画面 -->
+        <div id="element-quiz-screen" class="hidden space-y-6 text-center">
+            <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                <span class="text-xl font-black text-cyber-accent"><i class="fa-solid fa-flask mr-2"></i>元素の名前クイズ</span>
+                <span class="text-sm font-bold text-cyber-green">スコア: <span id="elem-score" class="text-xl font-black">0</span>点</span>
+            </div>
+
+            <div class="bg-slate-900 p-8 rounded-2xl border-2 border-emerald-500 space-y-4">
+                <div id="elem-symbol" class="text-6xl font-black text-emerald-400 font-mono tracking-wider">H</div>
+                <div class="text-sm text-slate-400 font-bold">この元素の「漢字・ひらがな（またはアルファベット）」の名前はなにかな？</div>
+                
+                <div id="elem-options" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                    <!-- 選択肢がここに動的に入ります -->
+                </div>
+            </div>
+            <div id="elem-feedback" class="text-lg font-bold h-8"></div>
         </div>
 
     </main>
@@ -152,11 +217,34 @@
     </footer>
 
     <script>
-        // 更新されたGAS WEBアプリURL
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzOlhnkZDCdDLNASIit1V4kGsiWMrKrtxOclv9W4HMAU7GXVekPzaZtx4BzJQruUCKnMA/exec";
 
-        // ページ読み込み時にランキングを取得して表示
+        // 画面切り替え関数
+        function showScreen(screenId) {
+            clearInterval(timerInterval);
+            window.removeEventListener('keydown', handleKeyPress);
+
+            const screens = ['top-screen', 'typing-menu-screen', 'game-screen', 'result-screen', 'element-quiz-screen'];
+            screens.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+
+            // ホームボタンの表示/非表示制御
+            if (screenId === 'top-screen') {
+                document.getElementById('home-btn').classList.add('hidden');
+                loadRanking(); // トップに戻ったときにランキングを再読み込み
+            } else {
+                document.getElementById('home-btn').classList.remove('hidden');
+            }
+        }
+
+        // ページ読み込み時にランキングを取得
         window.addEventListener('DOMContentLoaded', () => {
+            loadRanking();
+        });
+
+        function loadRanking() {
             fetch(GAS_URL)
                 .then(response => response.json())
                 .then(data => {
@@ -198,7 +286,7 @@
                 .catch(() => {
                     document.getElementById('ranking-list').innerHTML = '<p class="text-center text-xs text-pink-400 py-2">ランキングの読み込みに失敗しました</p>';
                 });
-        });
+        }
 
         function escapeHtml(str) {
             return str.replace(/[&'`<>""']/g, (match) => {
@@ -206,7 +294,7 @@
             });
         }
 
-        // ひらがなローマ字置換テーブル（ヘボン式・訓令式・各種揺れを完全カバー）
+        // ==================== タイピングゲーム関連 ====================
         const romaMap = {
             'あ':['a'],'い':['i'],'う':['u','wu'],'え':['e'],'お':['o'],
             'か':['ka'],'き':['ki'],'く':['ku'],'け':['ke'],'こ':['ko'],
@@ -238,10 +326,8 @@
             'ー':['-']
         };
 
-        // 単語データベース
         const wordBanks = {
             hokkaido: [
-                // 後志
                 { kanji: "古平町", kana: "ふるびらちょう" }, { kanji: "余市町", kana: "よいちちょう" },
                 { kanji: "積丹町", kana: "しゃこたんちょう" }, { kanji: "小樽市", kana: "おたるし" },
                 { kanji: "仁木町", kana: "にきちょう" }, { kanji: "赤井川村", kana: "あかいがわむら" },
@@ -252,119 +338,21 @@
                 { kanji: "留寿都村", kana: "るすつむら" }, { kanji: "喜茂別町", kana: "きもべつちょう" },
                 { kanji: "京極町", kana: "きょうごくちょう" }, { kanji: "黒松内町", kana: "くろまつないちょう" },
                 { kanji: "寿都町", kana: "すっつちょう" }, { kanji: "島牧村", kana: "しままきむら" },
-                // 石狩
                 { kanji: "札幌市", kana: "さっぽろし" }, { kanji: "江別市", kana: "えべつし" },
                 { kanji: "千歳市", kana: "ちとせし" }, { kanji: "恵庭市", kana: "えにわし" },
                 { kanji: "北広島市", kana: "きたひろしまし" }, { kanji: "石狩市", kana: "いしかりし" },
                 { kanji: "当別町", kana: "とうべつちょう" }, { kanji: "新篠津村", kana: "しんしのつむら" },
-                // 渡島・檜山
                 { kanji: "函館市", kana: "はこだてし" }, { kanji: "北斗市", kana: "ほくとし" },
-                { kanji: "松前町", kana: "まつまえちょう" }, { kanji: "福島町", kana: "ふくしまちょう" },
-                { kanji: "知内町", kana: "しうちちょう" }, { kanji: "木古内町", kana: "きこないちょう" },
-                { kanji: "七飯町", kana: "ななえちょう" }, { kanji: "鹿部町", kana: "しかべちょう" },
-                { kanji: "森町", kana: "もりまち" }, { kanji: "八雲町", kana: "やくもちょう" },
-                { kanji: "長万部町", kana: "おしゃまんべちょう" }, { kanji: "江差町", kana: "えさしちょう" },
-                { kanji: "上ノ国町", kana: "かみのくにちょう" }, { kanji: "厚沢部町", kana: "あっさぶちょう" },
-                { kanji: "乙部町", kana: "おとべちょう" }, { kanji: "奥尻町", kana: "おくしりちょう" },
-                { kanji: "今金町", kana: "いまかねちょう" }, { kanji: "せたな町", kana: "せたなちょう" },
-                // 空知
-                { kanji: "夕張市", kana: "ゆうばりし" }, { kanji: "岩見沢市", kana: "いわみざわし" },
-                { kanji: "美唄市", kana: "びばいし" }, { kanji: "芦別市", kana: "あしべつし" },
-                { kanji: "赤平市", kana: "あかびらし" }, { kanji: "三笠市", kana: "みかさし" },
-                { kanji: "滝川市", kana: "たきかわし" }, { kanji: "砂川市", kana: "すながわし" },
-                { kanji: "歌志内市", kana: "うたしないし" }, { kanji: "深川市", kana: "ふかがわし" },
-                { kanji: "南幌町", kana: "なんぽろちょう" }, { kanji: "奈井江町", kana: "ないえちょう" },
-                { kanji: "上砂川町", kana: "かみすながわちょう" }, { kanji: "由仁町", kana: "ゆにちょう" },
-                { kanji: "長沼町", kana: "ながぬまちょう" }, { kanji: "栗山町", kana: "くりやまちょう" },
-                { kanji: "月形町", kana: "つきがたちょう" }, { kanji: "浦臼町", kana: "うらうすちょう" },
-                { kanji: "新十津川町", kana: "しんとつかわちょう" }, { kanji: "妹背牛町", kana: "もせうしちょう" },
-                { kanji: "秩父別町", kana: "ちっぷべつちょう" }, { kanji: "雨竜町", kana: "うりゅうちょう" },
-                { kanji: "北竜町", kana: "ほくりゅうちょう" }, { kanji: "沼田町", kana: "ぬまたちょう" },
-                // 上川
-                { kanji: "旭川市", kana: "あさひかわし" }, { kanji: "士別市", kana: "しべつし" },
-                { kanji: "名寄市", kana: "なよろし" }, { kanji: "富良野市", kana: "ふらのし" },
-                { kanji: "鷹栖町", kana: "たかすちょう" }, { kanji: "東神楽町", kana: "ひがしかぐらちょう" },
-                { kanji: "東川町", kana: "ひがしかわちょう" }, { kanji: "美瑛町", kana: "びえいちょう" },
-                { kanji: "上富良野町", kana: "かみふらのちょう" }, { kanji: "中富良野町", kana: "なかふらのちょう" },
-                { kanji: "南富良野町", kana: "みなみふらのちょう" }, { kanji: "占冠村", kana: "しむかっぷむら" },
-                { kanji: "和寒町", kana: "わっさむちょう" }, { kanji: "剣淵町", kana: "けんぶちちょう" },
-                { kanji: "下川町", kana: "しもかわちょう" }, { kanji: "美深町", kana: "びふかちょう" },
-                { kanji: "音威子府村", kana: "おといねっぷむら" }, { kanji: "中川町", kana: "なかがわちょう" },
-                { kanji: "幌加内町", kana: "ほろかないちょう" },
-                // 留萌・宗谷
-                { kanji: "留萌市", kana: "るもいし" }, { kanji: "増毛町", kana: "ましけちょう" },
-                { kanji: "小平町", kana: "おびらちょう" }, { kanji: "苫前町", kana: "とままえちょう" },
-                { kanji: "羽幌町", kana: "はぼろちょう" }, { kanji: "初山別村", kana: "しょさんべつむら" },
-                { kanji: "遠別町", kana: "えんべつちょう" }, { kanji: "天塩町", kana: "てしおちょう" },
-                { kanji: "稚内市", kana: "わっかないし" }, { kanji: "猿払村", kana: "さるふつむら" },
-                { kanji: "浜頓別町", kana: "はまとんべつちょう" }, { kanji: "中頓別町", kana: "なかとんべつちょう" },
-                { kanji: "枝幸町", kana: "えさしちょう" }, { kanji: "豊富町", kana: "とよとみちょう" },
-                { kanji: "礼文町", kana: "れぶんちょう" }, { kanji: "利尻町", kana: "りしりちょう" },
-                { kanji: "利尻富士町", kana: "りしりふじちょう" }, { kanji: "幌延町", kana: "ほろのべちょう" },
-                // オホーツク
-                { kanji: "北見市", kana: "きたみし" }, { kanji: "網走市", kana: "あばしりし" },
-                { kanji: "紋別市", kana: "もんべつし" }, { kanji: "美幌町", kana: "びほろちょう" },
-                { kanji: "津別町", kana: "つべつちょう" }, { kanji: "斜里町", kana: "しゃりちょう" },
-                { kanji: "清里町", kana: "きよさとちょう" }, { kanji: "小清水町", kana: "こしみずちょう" },
-                { kanji: "訓子府町", kana: "くんねっぷちょう" }, { kanji: "置戸町", kana: "おけとちょう" },
-                { kanji: "佐呂間町", kana: "さろまちょう" }, { kanji: "遠軽町", kana: "えんがるちょう" },
-                { kanji: "湧別町", kana: "ゆうべつちょう" }, { kanji: "滝上町", kana: "たきうえちょう" },
-                { kanji: "興部町", kana: "おこっぺちょう" }, { kanji: "西興部村", kana: "にしおこっぺむら" },
-                { kanji: "雄武町", kana: "おうむちょう" }, { kanji: "大空町", kana: "おおぞらちょう" },
-                // 胆振・日高
-                { kanji: "室蘭市", kana: "むろらんし" }, { kanji: "苫小牧市", kana: "とまこまいし" },
-                { kanji: "登別市", kana: "のぼりべつし" }, { kanji: "伊達市", kana: "だてし" },
-                { kanji: "豊浦町", kana: "とようらちょう" }, { kanji: "壮瞥町", kana: "そうべつちょう" },
-                { kanji: "白老町", kana: "しらおいちょう" }, { kanji: "厚真町", kana: "あつまちょう" },
-                { kanji: "洞爺湖町", kana: "とうやこちょう" }, { kanji: "安平町", kana: "あびらちょう" },
-                { kanji: "むかわ町", kana: "むかわちょう" }, { kanji: "日高町", kana: "ひだかちょう" },
-                { kanji: "平取町", kana: "びらとりちょう" }, { kanji: "新冠町", kana: "にいかっぷちょう" },
-                { kanji: "浦河町", kana: "うらかわちょう" }, { kanji: "様似町", kana: "さまにちょう" },
-                { kanji: "えりも町", kana: "えりもちょう" }, { kanji: "新ひだか町", kana: "しんひだかちょう" },
-                // 十勝
-                { kanji: "帯広市", kana: "おびひろし" }, { kanji: "音更町", kana: "おとふけちょう" },
-                { kanji: "士幌町", kana: "しほろちょう" }, { kanji: "上士幌町", kana: "かみしほろちょう" },
-                { kanji: "鹿追町", kana: "しかおいちょう" }, { kanji: "新得町", kana: "しんとくちょう" },
-                { kanji: "清水町", kana: "しみずちょう" }, { kanji: "芽室町", kana: "めむろちょう" },
-                { kanji: "中札内村", kana: "なかさつないむら" }, { kanji: "更別村", kana: "さらべつむら" },
-                { kanji: "大樹町", kana: "たいきちょう" }, { kanji: "広尾町", kana: "ひろおちょう" },
-                { kanji: "幕別町", kana: "まくべつちょう" }, { kanji: "池田町", kana: "いけだちょう" },
-                { kanji: "豊頃町", kana: "とよころちょう" }, { kanji: "本別町", kana: "ほんべつちょう" },
-                { kanji: "足寄町", kana: "あしょろちょう" }, { kanji: "陸別町", kana: "りくべつちょう" },
-                { kanji: "浦幌町", kana: "うらほろちょう" },
-                // 釧路・根室
-                { kanji: "釧路市", kana: "くしろし" }, { kanji: "釧路町", kana: "くしろちょう" },
-                { kanji: "厚岸町", kana: "あっけしちょう" }, { kanji: "浜中町", kana: "はまなかちょう" },
-                { kanji: "標茶町", kana: "しべちゃちょう" }, { kanji: "弟子屈町", kana: "てしかがちょう" },
-                { kanji: "鶴居村", kana: "つるいむら" }, { kanji: "白糠町", kana: "しらぬかちょう" },
-                { kanji: "根室市", kana: "ねむろし" }, { kanji: "別海町", kana: "べつかいちょう" },
-                { kanji: "中標津町", kana: "なかしべつちょう" }, { kanji: "標津町", kana: "しべつちょう" },
-                { kanji: "羅臼町", kana: "らうすちょう" }
+                { kanji: "旭川市", kana: "あさひかわし" }, { kanji: "室蘭市", kana: "むろらんし" },
+                { kanji: "苫小牧市", kana: "とまこまいし" }, { kanji: "帯広市", kana: "おびひろし" },
+                { kanji: "釧路市", kana: "くしろし" }, { kanji: "北見市", kana: "きたみし" }
             ],
             japan: [
                 { kanji: "北海道", kana: "ほっかいどう" }, { kanji: "青森県", kana: "あおもりけん" },
                 { kanji: "岩手県", kana: "いわてけん" }, { kanji: "宮城県", kana: "みやぎけん" },
-                { kanji: "秋田県", kana: "あきたけん" }, { kanji: "山形県", kana: "やまがたけん" },
-                { kanji: "福島県", kana: "ふくしまけん" }, { kanji: "茨城県", kana: "いばらきけん" },
-                { kanji: "栃木県", kana: "とちぎけん" }, { kanji: "群馬県", kana: "ぐんまけん" },
-                { kanji: "埼玉県", kana: "さいたまけん" }, { kanji: "千葉県", kana: "ちばけん" },
                 { kanji: "東京都", kana: "とうきょうと" }, { kanji: "神奈川県", kana: "かながわけん" },
-                { kanji: "新潟県", kana: "にいがたけん" }, { kanji: "富山県", kana: "とやまけん" },
-                { kanji: "石川県", kana: "いしかわけん" }, { kanji: "福井県", kana: "ふくいけん" },
-                { kanji: "山梨県", kana: "やまなしけん" }, { kanji: "長野県", kana: "ながのけん" },
-                { kanji: "岐阜県", kana: "ぎふけん" }, { kanji: "静岡県", kana: "しずかけん" },
-                { kanji: "愛知県", kana: "あいちけん" }, { kanji: "三重県", kana: "みえけん" },
-                { kanji: "滋賀県", kana: "しがけん" }, { kanji: "京都府", kana: "きょうとふ" },
-                { kanji: "大阪府", kana: "おおさかふ" }, { kanji: "兵庫県", kana: "ひょうごけん" },
-                { kanji: "奈良県", kana: "ならけん" }, { kanji: "和歌山県", kana: "わかやまけん" },
-                { kanji: "鳥取県", kana: "とっとりけん" }, { kanji: "島根県", kana: "しまねけん" },
-                { kanji: "岡山県", kana: "おかやまけん" }, { kanji: "広島県", kana: "ひろしまけん" },
-                { kanji: "山口県", kana: "やまぐちけん" }, { kanji: "徳島県", kana: "とくしまけん" },
-                { kanji: "香川県", kana: "かがわけん" }, { kanji: "愛媛県", kana: "えひめけん" },
-                { kanji: "高知県", kana: "こうちけん" }, { kanji: "福岡県", kana: "ふくおかけん" },
-                { kanji: "佐賀県", kana: "さがけん" }, { kanji: "長崎県", kana: "ながさきけん" },
-                { kanji: "熊本県", kana: "くまもとけん" }, { kanji: "大分県", kana: "おおいたけん" },
-                { kanji: "宮崎県", kana: "みやざきけん" }, { kanji: "鹿児島県", kana: "かごしまけん" },
+                { kanji: "愛知県", kana: "あいちけん" }, { kanji: "大阪府", kana: "おおさかふ" },
+                { kanji: "京都府", kana: "きょうとふ" }, { kanji: "福岡県", kana: "ふくおかけん" },
                 { kanji: "沖縄県", kana: "おきなわけん" }
             ]
         };
@@ -413,7 +401,7 @@
             return nodes;
         }
 
-        function startGame(mode) {
+        function startTypingGame(mode) {
             playerName = document.getElementById('player-name').value.trim();
             if (!playerName) {
                 alert("プレイヤーのなまえを入力してね！");
@@ -421,13 +409,18 @@
             }
 
             currentMode = mode;
+            score = 0;
+            miss = 0;
+            timeLeft = 60;
+
             document.getElementById('disp-name').innerText = playerName;
+            document.getElementById('score-count').innerText = "0";
+            document.getElementById('miss-count').innerText = "0";
+            document.getElementById('timer').innerText = "60";
             document.getElementById('current-mode-title').innerText = 
                 mode === 'hokkaido' ? '北海道市町村コース' : '全国都道府県コース';
 
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-
+            showScreen('game-screen');
             window.addEventListener('keydown', handleKeyPress);
             nextWord();
             startTimer();
@@ -500,8 +493,7 @@
 
         function endGame() {
             window.removeEventListener('keydown', handleKeyPress);
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
+            showScreen('result-screen');
             document.getElementById('final-score').innerText = `${score} 点`;
 
             if (GAS_URL && GAS_URL !== "YOUR_GAS_WEB_APP_URL_HERE") {
@@ -523,6 +515,71 @@
             } else {
                 document.getElementById('send-status').innerText = "（※GAS URL未設定）";
             }
+        }
+
+        // ==================== 元素クイズ関連 ====================
+        const elementsData = [
+            { symbol: "H", name: "水素" }, { symbol: "He", name: "ヘリウム" },
+            { symbol: "C", name: "炭素" }, { symbol: "N", name: "窒素" },
+            { symbol: "O", name: "酸素" }, { symbol: "Na", name: "ナトリウム" },
+            { symbol: "Mg", name: "マグネシウム" }, { symbol: "Al", name: "アルミニウム" },
+            { symbol: "Si", name: "ケイ素" }, { symbol: "P", name: "リン" },
+            { symbol: "S", name: "硫黄" }, { symbol: "Cl", name: "塩素" },
+            { symbol: "K", name: "カリウム" }, { symbol: "Ca", name: "カルシウム" },
+            { symbol: "Fe", name: "鉄" }, { symbol: "Cu", name: "銅" },
+            { symbol: "Zn", name: "亜鉛" }, { symbol: "Ag", name: "銀" },
+            { symbol: "Au", name: "金" }, { symbol: "Hg", name: "水銀" }
+        ];
+
+        let elemScore = 0;
+        let currentElement = {};
+
+        function startElementQuiz() {
+            elemScore = 0;
+            document.getElementById('elem-score').innerText = elemScore;
+            document.getElementById('elem-feedback').innerText = "";
+            nextElementQuiz();
+        }
+
+        function nextElementQuiz() {
+            document.getElementById('elem-feedback').innerText = "";
+            // ランダムに問題を選ぶ
+            currentElement = elementsData[Math.floor(Math.random() * elementsData.length)];
+            document.getElementById('elem-symbol').innerText = currentElement.symbol;
+
+            // 正解を含めた4つの選択肢を作る
+            let options = [currentElement.name];
+            while (options.length < 4) {
+                let randomElem = elementsData[Math.floor(Math.random() * elementsData.length)].name;
+                if (!options.includes(randomElem)) {
+                    options.push(randomElem);
+                }
+            }
+            // 選択肢をシャッフル
+            options.sort(() => Math.random() - 0.5);
+
+            // 画面にボタンとして配置
+            let html = '';
+            options.forEach(opt => {
+                html += `<button onclick="checkElementAnswer('${opt}')" class="pop-button p-4 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl border border-emerald-500/50">${opt}</button>`;
+            });
+            document.getElementById('elem-options').innerHTML = html;
+        }
+
+        function checkElementAnswer(selected) {
+            const feedback = document.getElementById('elem-feedback');
+            if (selected === currentElement.name) {
+                elemScore += 10;
+                document.getElementById('elem-score').innerText = elemScore;
+                feedback.innerHTML = `<span class="text-cyber-green">⭕ せいかい！すばらしい！</span>`;
+            } else {
+                feedback.innerHTML = `<span class="text-cyber-pink">❌ ざんねん！正解は「${currentElement.name}」だよ</span>`;
+            }
+
+            // 1.5秒後に次の問題へ
+            setTimeout(() => {
+                nextElementQuiz();
+            }, 1500);
         }
     </script>
 </body>
