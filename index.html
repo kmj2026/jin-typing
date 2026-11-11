@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地名タイピングマスター</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#facc15', // Neon Yellow
+                            blue: '#38bdf8',   // Neon Blue
+                            pink: '#f43f5e',   // Neon Pink
+                            green: '#4ade80'   // Neon Green
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"M PLUS Rounded 1c"', 'sans-serif'],
+                        teko: ['Teko', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f8fafc;
+        }
+        .pop-card {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            border: 3px solid #38bdf8;
+        }
+        .pop-button {
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #0284c7;
+        }
+        .pop-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #0284c7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 font-sans">
+
+    <!-- ヘッダー -->
+    <header class="w-full max-w-2xl text-center py-4">
+        <h1 class="text-4xl md:text-5xl font-black text-cyber-accent tracking-wider drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)]">
+            ⌨️ 地名タイピングマスター ⌨️
+        </h1>
+        <p class="text-sm text-cyber-blue font-bold mt-1">キーボードを叩いて地理を極めよう！</p>
+    </header>
+
+    <!-- メインエリア -->
+    <main class="w-full max-w-2xl bg-cyber-card rounded-3xl p-6 md:p-8 pop-card mb-6">
+
+        <!-- 1. なまえ入力＆モード選択画面 -->
+        <div id="start-screen" class="space-y-6">
+            <h2 class="text-2xl font-black text-center text-white mb-2">
+                <i class="fa-solid fa-gamepad text-cyber-accent mr-2"></i>プレイヤー情報とコースを選んでね！
+            </h2>
+            
+            <div class="space-y-2 text-left">
+                <label class="text-sm font-bold text-cyber-blue"><i class="fa-solid fa-user mr-2"></i>プレイヤーのなまえ：</label>
+                <input type="text" id="player-name" placeholder="なまえを入力（例: じん）" 
+                    class="w-full p-4 rounded-2xl bg-slate-900 border-2 border-cyber-blue text-white font-bold text-xl text-center focus:outline-none focus:border-cyber-accent">
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <label class="text-sm font-bold text-cyber-blue"><i class="fa-solid fa-map-location-dot mr-2"></i>チャレンジするコース：</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="startGame('hokkaido')" class="pop-button flex flex-col items-center justify-center p-5 bg-sky-500 hover:bg-sky-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                        <span><i class="fa-solid fa-mountain-sun mr-2"></i>北海道市町村コース</span>
+                        <span class="text-xs text-slate-800 font-bold mt-1">地元・北海道の市町村名</span>
+                    </button>
+                    <button onclick="startGame('japan')" class="pop-button flex flex-col items-center justify-center p-5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                        <span><i class="fa-solid fa-map mr-2"></i>全国都道府県コース</span>
+                        <span class="text-xs text-slate-800 font-bold mt-1">全国47都道府県名</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. タイピングゲーム画面 -->
+        <div id="game-screen" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-slate-900/80 p-4 rounded-2xl border border-slate-700">
+                <span id="current-mode-title" class="text-xl font-black text-cyber-accent">北海道市町村コース</span>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm font-bold text-slate-300">プレイヤー: <span id="disp-name" class="text-white"></span></span>
+                    <span id="timer" class="text-2xl font-teko font-bold text-cyber-pink bg-slate-900 px-3 py-1 rounded-xl border border-cyber-pink">60</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-8 rounded-2xl border-2 border-cyber-blue text-center space-y-3">
+                <div id="kanji-display" class="text-4xl md:text-5xl font-black text-cyber-accent tracking-wider drop-shadow">古平町</div>
+                <div id="hiragana-display" class="text-lg text-slate-400 font-bold">ふるびらちょう</div>
+                
+                <div id="romaji-display" class="text-2xl md:text-3xl font-mono font-bold tracking-widest text-white mt-6 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <span id="typed-romaji" class="text-cyber-green underline"></span><span id="untyped-romaji" class="text-slate-500"></span>
+                </div>
+            </div>
+
+            <div class="flex justify-around text-base font-bold bg-slate-900/50 p-3 rounded-xl border border-slate-700">
+                <div class="text-slate-300">正打数: <span id="score-count" class="text-cyber-green text-xl font-black">0</span></div>
+                <div class="text-slate-300">ミス数: <span id="miss-count" class="text-cyber-pink text-xl font-black">0</span></div>
+            </div>
+        </div>
+
+        <!-- 3. 結果画面 -->
+        <div id="result-screen" class="hidden text-center space-y-6">
+            <h2 class="text-3xl font-black text-cyber-accent">🎉 タイムアップ！お疲れ様！ 🎉</h2>
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 space-y-3">
+                <p class="text-slate-400 font-bold">今回のスコア（正打数）</p>
+                <p id="final-score" class="text-5xl font-black text-cyber-green">0 点</p>
+                <p id="send-status" class="text-sm text-cyber-blue font-bold">結果をスプレッドシートに送信中...</p>
+            </div>
+            <button onclick="location.reload()" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
+                <i class="fa-solid fa-house mr-2"></i>メニューに戻る
+            </button>
+        </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="text-center text-xs text-slate-500 font-bold pb-2">
+        kmj
+    </footer>
+
+    <script>
+        // ★ここにGoogle Apps Script（GAS）のWEBアプリURLを貼り付けます★
+        const GAS_URL = "YOUR_GAS_WEB_APP_URL_HERE";
+
+        // 単語データベース
+        const wordBanks = {
+            hokkaido: [
+                { kanji: "古平町", kana: "ふるびらちょう", romaji: "furubirachou" },
+                { kanji: "余市町", kana: "よいちちょう", romaji: "yoichichou" },
+                { kanji: "小樽市", kana: "おたるし", romaji: "otarushi" },
+                { kanji: "札幌市", kana: "さっぽろし", romaji: "sapporoshi" },
+                { kanji: "積丹町", kana: "しゃこたんちょう", romaji: "shakotanchou" },
+                { kanji: "ニセコ町", kana: "にせこちょう", romaji: "nisekochou" },
+                { kanji: "函館市", kana: "はこだてし", romaji: "hakodateshi" },
+                { kanji: "旭川市", kana: "あさひかわし", romaji: "asahikawashi" },
+                { kanji: "釧路市", kana: "くしろし", romaji: "kushiroshi" },
+                { kanji: "帯広市", kana: "おびひろし", romaji: "obihiroshi" },
+                { kanji: "北見市", kana: "きたみし", romaji: "kitamishi" },
+                { kanji: "室蘭市", kana: "むろらんし", romaji: "muroranshi" },
+                { kanji: "苫小牧市", kana: "とまこまいし", romaji: "tomakomaishi" },
+                { kanji: "網走市", kana: "あばしりし", romaji: "abashirishi" },
+                { kanji: "稚内市", kana: "わっかないし", romaji: "wakkanaishi" }
+            ],
+            japan: [
+                { kanji: "北海道", kana: "ほっかいどう", romaji: "hokkaidou" },
+                { kanji: "東京都", kana: "とうきょうと", romaji: "toukyouto" },
+                { kanji: "大阪府", kana: "おおさかふ", romaji: "oosakafu" },
+                { kanji: "京都府", kana: "きょうとふ", romaji: "kyoutofu" },
+                { kanji: "青森県", kana: "あおもりけん", romaji: "aomoriken" },
+                { kanji: "岩手県", kana: "いわてけん", romaji: "iwateken" },
+                { kanji: "宮城県", kana: "みやぎけん", romaji: "miyagiken" },
+                { kanji: "神奈川県", kana: "かながわけん", romaji: "kanagawaken" },
+                { kanji: "愛知県", kana: "あいちけん", romaji: "aichiken" },
+                { kanji: "福岡県", kana: "ふくおかけん", romaji: "fukuokaken" },
+                { kanji: "沖縄県", kana: "おきなわけん", romaji: "okinawaken" },
+                { kanji: "鹿児島県", kana: "かごしまけん", romaji: "kagoshimaken" },
+                { kanji: "広島県", kana: "ひろしまけん", romaji: "hiroshimaken" }
+            ]
+        };
+
+        let playerName = "";
+        let currentMode = "";
+        let currentWord = {};
+        let typedIdx = 0;
+        let score = 0;
+        let miss = 0;
+        let timeLeft = 60;
+        let timerInterval;
+
+        function startGame(mode) {
+            playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                alert("プレイヤーのなまえを入力してね！");
+                return;
+            }
+
+            currentMode = mode;
+            document.getElementById('disp-name').innerText = playerName;
+            document.getElementById('current-mode-title').innerText = 
+                mode === 'hokkaido' ? '北海道市町村コース' : '全国都道府県コース';
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            window.addEventListener('keydown', handleKeyPress);
+            nextWord();
+            startTimer();
+        }
+
+        function nextWord() {
+            const list = wordBanks[currentMode];
+            currentWord = list[Math.floor(Math.random() * list.length)];
+            typedIdx = 0;
+            updateWordDisplay();
+        }
+
+        function updateWordDisplay() {
+            document.getElementById('kanji-display').innerText = currentWord.kanji;
+            document.getElementById('hiragana-display').innerText = currentWord.kana;
+            document.getElementById('typed-romaji').innerText = currentWord.romaji.substring(0, typedIdx);
+            document.getElementById('untyped-romaji').innerText = currentWord.romaji.substring(typedIdx);
+        }
+
+        function handleKeyPress(e) {
+            if (timeLeft <= 0) return;
+            const targetChar = currentWord.romaji[typedIdx];
+            if (e.key.toLowerCase() === targetChar) {
+                typedIdx++;
+                score++;
+                document.getElementById('score-count').innerText = score;
+                if (typedIdx >= currentWord.romaji.length) {
+                    nextWord();
+                } else {
+                    updateWordDisplay();
+                }
+            } else if (e.key.length === 1 && e.key !== 'Process') {
+                miss++;
+                document.getElementById('miss-count').innerText = miss;
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            window.removeEventListener('keydown', handleKeyPress);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = `${score} 点`;
+
+            if (GAS_URL && GAS_URL !== "https://script.google.com/macros/s/AKfycbzrrGhvDov053UMvMh8r7KTlUWILU8XQhOGJyzSnmP-GWZ1BgSM4fl8is2GolLiQsTWTQ/exec") {
+                fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: `${playerName} (${currentMode === 'hokkaido' ? '北海道' : '全国'})`,
+                        score: score,
+                        correct: score,
+                        miss: miss
+                    })
+                }).then(() => {
+                    document.getElementById('send-status').innerText = "✅ スプレッドシートに記録を保存しました！";
+                }).catch(() => {
+                    document.getElementById('send-status').innerText = "⚠️ 送信エラーが発生しました";
+                });
+            } else {
+                document.getElementById('send-status').innerText = "（※GAS URL未設定）";
+            }
+        }
+    </script>
+</body>
+</html>
