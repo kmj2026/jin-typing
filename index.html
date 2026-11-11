@@ -269,7 +269,7 @@
             <div id="test-options-container" class="grid grid-cols-1 gap-3"></div>
         </div>
 
-        <!-- 7. 結果画面（共通） -->
+        <!-- 7. 結果画面（共通）＆ 正誤一覧 -->
         <div id="result-screen" class="hidden text-center space-y-6">
             <h2 class="text-3xl font-black text-cyber-accent">🎉 テスト・ゲーム終了！ 🎉</h2>
             <div class="bg-slate-900 p-6 rounded-2xl border border-slate-700 space-y-3">
@@ -277,7 +277,18 @@
                 <p id="final-score" class="text-5xl font-black text-cyber-green">0 点</p>
                 <p id="send-status" class="text-sm text-cyber-blue font-bold">結果をスプレッドシートに送信中...</p>
             </div>
-            <div id="result-back-btn-container" class="space-y-3">
+
+            <!-- 総合テストのときだけ表示される正誤一覧エリア -->
+            <div id="test-review-container" class="hidden space-y-4 text-left">
+                <h3 class="text-xl font-black text-white border-b border-slate-700 pb-2">
+                    <i class="fa-solid fa-clipboard-list text-cyber-accent mr-2"></i>こたえあわせ（正誤一覧）
+                </h3>
+                <div id="test-review-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    <!-- ここにJavaScriptで問題ごとの正誤と正解が表示されます -->
+                </div>
+            </div>
+
+            <div id="result-back-btn-container" class="space-y-3 pt-2">
                 <button onclick="returnToProperMenu()" class="pop-button w-full py-4 bg-cyber-accent text-slate-900 font-black text-xl rounded-2xl border-2 border-white">
                     <i class="fa-solid fa-arrow-left mr-2"></i><span id="back-btn-text">メニューに戻る</span>
                 </button>
@@ -292,8 +303,7 @@
     </footer>
 
     <script>
-        // 新しいGASのURLを設定
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzx7c1cGhzFDwgJzw9OyfS4qifQ_zgzL2iffVDwBBS3kRB0D4o1LExbs3-WZB6Ng94z1g/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyP-fIVk-ZXPgEAhd1tt_4q5W_rt_CuWlzGI7njI0hEZX0MHYUWWPnkz9VPe4ckvwFIQA/exec";
 
         let allRankings = {};
         let lastPlayedMode = 'top';
@@ -425,7 +435,7 @@
                     })
                 }).then(() => {
                     document.getElementById('send-status').innerText = "✅ スプレッドシートに記録を保存しました！";
-                    setTimeout(fetchAllRankings, 1000); // 1秒後に最新ランキングを再取得
+                    setTimeout(fetchAllRankings, 1000);
                     if (mode === 'test' && testSubject) {
                         const badge = document.getElementById(`score-badge-${testSubject}`);
                         if(badge) {
@@ -509,6 +519,8 @@
         let typingTimeLeft = 60;
         let kanaNodes = [];
         let typedInputString = "";
+        let availableWords = [];
+        let currentWord = {};
 
         function buildKanaTree(kana) {
             let i = 0;
@@ -555,6 +567,7 @@
             typingScore = 0;
             typingMiss = 0;
             typingTimeLeft = 60;
+            availableWords = [...wordBanks[currentMode]].sort(() => Math.random() - 0.5);
 
             document.getElementById('disp-name').innerText = playerName;
             document.getElementById('score-count').innerText = "0";
@@ -570,8 +583,10 @@
         }
 
         function nextWord() {
-            const list = wordBanks[currentMode];
-            currentWord = list[Math.floor(Math.random() * list.length)];
+            if (availableWords.length === 0) {
+                availableWords = [...wordBanks[currentMode]].sort(() => Math.random() - 0.5);
+            }
+            currentWord = availableWords.pop();
             kanaNodes = buildKanaTree(currentWord.kana);
             typedInputString = "";
             updateWordDisplay();
@@ -893,6 +908,7 @@
         let testIndex = 0;
         let testScore = 0;
         let testTimeLeft = 900;
+        let userTestAnswers = []; // ユーザーの解答履歴を保存する配列
 
         function startSubjectTest(subject) {
             playerName = document.getElementById('player-name-test').value.trim();
@@ -907,6 +923,7 @@
             testIndex = 0;
             testScore = 0;
             testTimeLeft = 900;
+            userTestAnswers = []; // 履歴をリセット
 
             showScreen('test-play-screen');
             const titles = { math: '算数テスト (10問)', japanese: '国語テスト (10問)', science: '理科テスト (10問)', social: '社会テスト (10問)' };
@@ -939,6 +956,7 @@
             if (testIndex >= testQuestions.length) {
                 clearInterval(testTimerInterval);
                 let finalScore100 = testScore * 10;
+                buildTestReviewUI(); // 結果発表時に一覧を作成
                 endGame('test', finalScore100, testScore, 0);
                 return;
             }
@@ -961,11 +979,53 @@
 
         function checkTestAnswer(selectedIdx) {
             let qData = testQuestions[testIndex];
-            if (selectedIdx === qData.answer) {
+            let isCorrect = (selectedIdx === qData.answer);
+            if (isCorrect) {
                 testScore += 1;
             }
+            // 解答履歴を保存
+            userTestAnswers.push({
+                question: qData.q,
+                options: qData.options,
+                userAnswerIdx: selectedIdx,
+                correctIdx: qData.answer,
+                isCorrect: isCorrect
+            });
+
             testIndex++;
             showTestQuestion();
+        }
+
+        // 正誤一覧（こたえあわせ）のHTMLを組み立てる関数
+        function buildTestReviewUI() {
+            const container = document.getElementById('test-review-list');
+            const reviewWrapper = document.getElementById('test-review-container');
+            reviewWrapper.classList.remove('hidden');
+
+            let html = '';
+            userTestAnswers.forEach((item, idx) => {
+                let statusBadge = item.isCorrect 
+                    ? '<span class="px-2 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500 rounded text-xs font-bold">⭕ 正解</span>' 
+                    : '<span class="px-2 py-1 bg-pink-500/20 text-pink-400 border border-pink-500 rounded text-xs font-bold">❌ 不正解</span>';
+                
+                let userAnsText = item.options[item.userAnswerIdx];
+                let correctAnsText = item.options[item.correctIdx];
+
+                html += `
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-400">第 ${idx + 1} 問</span>
+                            ${statusBadge}
+                        </div>
+                        <p class="text-sm font-bold text-white">${escapeHtml(item.question)}</p>
+                        <div class="text-xs space-y-1 pt-1 border-t border-slate-800">
+                            <div class="text-slate-300">あなたの答え：<span class="${item.isCorrect ? 'text-emerald-400 font-bold' : 'text-pink-400 font-bold'}">${escapeHtml(userAnsText)}</span></div>
+                            ${!item.isCorrect ? `<div class="text-cyber-green font-bold">正しい答え：<span>${escapeHtml(correctAnsText)}</span></div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
     </script>
 </body>
