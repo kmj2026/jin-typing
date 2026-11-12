@@ -54,9 +54,25 @@
             transform: translateY(4px);
             box-shadow: 0 0 0 #0284c7;
         }
+        @keyframes pulse-pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-countdown {
+            animation: pulse-pop 0.4s ease-out forwards;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-4 font-sans">
+
+    <!-- 共通カウントダウンオーバーレイ -->
+    <div id="countdown-overlay" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center">
+        <div id="countdown-text" class="text-7xl md:text-9xl font-black text-cyber-accent tracking-wider drop-shadow-[0_0_25px_rgba(250,204,21,0.8)] animate-countdown">
+            3
+        </div>
+        <p class="text-slate-300 font-bold text-lg mt-4">じゅんびしてね！</p>
+    </div>
 
     <!-- 共通ヘッダー -->
     <header class="w-full max-w-2xl flex items-center justify-between py-4">
@@ -107,7 +123,7 @@
                     <div class="flex items-center space-x-4">
                         <i class="fa-solid fa-globe text-3xl"></i>
                         <div>
-                            <div>総合テスト（小学6年生・各50問）</div>
+                            <div>総合テスト（小学6年生・各10問）</div>
                             <div class="text-xs text-slate-800 font-bold mt-0.5">算数・国語・理科・社会</div>
                         </div>
                     </div>
@@ -284,7 +300,6 @@
                     <i class="fa-solid fa-clipboard-list text-cyber-accent mr-2"></i>こたえあわせ（正誤一覧）
                 </h3>
                 <div id="test-review-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                    <!-- ここにJavaScriptで問題ごとの正誤と正解が表示されます -->
                 </div>
             </div>
 
@@ -308,14 +323,46 @@
         let allRankings = {};
         let lastPlayedMode = 'top';
         let testSubject = '';
-        let timerInterval, elemTimerInterval, testTimerInterval;
+        let timerInterval, elemTimerInterval, testTimerInterval, countdownInterval;
         let playerName = '';
         let currentMode = '';
+
+        // ==================== 共通カウントダウン演出 ====================
+        function startCountdown(callback) {
+            const overlay = document.getElementById('countdown-overlay');
+            const textEl = document.getElementById('countdown-text');
+            overlay.classList.remove('hidden');
+
+            let count = 3;
+            const updateCount = (val, colorClass = 'text-cyber-accent') => {
+                textEl.className = `text-7xl md:text-9xl font-black ${colorClass} tracking-wider drop-shadow-[0_0_25px_rgba(250,204,21,0.8)] animate-countdown`;
+                textEl.innerText = val;
+                void textEl.offsetWidth;
+            };
+
+            updateCount(3);
+            clearInterval(countdownInterval);
+
+            countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    updateCount(count);
+                } else if (count === 0) {
+                    updateCount('スタート！', 'text-cyber-green');
+                } else {
+                    clearInterval(countdownInterval);
+                    overlay.classList.add('hidden');
+                    callback();
+                }
+            }, 800);
+        }
 
         function showScreen(screenId) {
             clearInterval(timerInterval);
             clearInterval(elemTimerInterval);
             clearInterval(testTimerInterval);
+            clearInterval(countdownInterval);
+            document.getElementById('countdown-overlay').classList.add('hidden');
             window.removeEventListener('keydown', handleKeyPress);
 
             const screens = [
@@ -406,6 +453,7 @@
 
         function endGame(mode, finalScore, correct, missCount) {
             window.removeEventListener('keydown', handleKeyPress);
+            document.getElementById('test-review-container').classList.add('hidden');
             
             if (mode === 'test') {
                 lastPlayedMode = 'test';
@@ -419,6 +467,9 @@
             }
 
             showScreen('result-screen');
+            if (mode === 'test') {
+                buildTestReviewUI();
+            }
             document.getElementById('final-score').innerText = `${finalScore} 点`;
 
             if (GAS_URL) {
@@ -521,6 +572,7 @@
         let typedInputString = "";
         let availableWords = [];
         let currentWord = {};
+        let isTypingActive = false;
 
         function buildKanaTree(kana) {
             let i = 0;
@@ -528,6 +580,18 @@
             while (i < kana.length) {
                 let char2 = kana.substring(i, i + 2);
                 let char1 = kana.substring(i, i + 1);
+
+                if (char1 === 'ん') {
+                    let nextChar = kana.substring(i + 1, i + 2);
+                    const needsDoubleN = ['あ', 'い', 'う', 'え', 'お', 'や', 'ゆ', 'よ', 'ん', ''].includes(nextChar);
+                    if (needsDoubleN) {
+                        nodes.push({ kana: 'ん', patterns: ['nn', "n'"] });
+                    } else {
+                        nodes.push({ kana: 'ん', patterns: ['n', 'nn', "n'"] });
+                    }
+                    i += 1;
+                    continue;
+                }
 
                 if (char1 === 'っ' && i + 1 < kana.length) {
                     let nextKana = kana.substring(i + 1, i + 3);
@@ -567,6 +631,7 @@
             typingScore = 0;
             typingMiss = 0;
             typingTimeLeft = 60;
+            isTypingActive = false;
             availableWords = [...wordBanks[currentMode]].sort(() => Math.random() - 0.5);
 
             document.getElementById('disp-name').innerText = playerName;
@@ -577,9 +642,13 @@
                 mode === 'hokkaido' ? '北海道市町村コース' : '全国都道府県コース';
 
             showScreen('game-screen');
-            window.addEventListener('keydown', handleKeyPress);
             nextWord();
-            startTimer();
+
+            startCountdown(() => {
+                isTypingActive = true;
+                window.addEventListener('keydown', handleKeyPress);
+                startTimer();
+            });
         }
 
         function nextWord() {
@@ -601,7 +670,7 @@
         }
 
         function handleKeyPress(e) {
-            if (typingTimeLeft <= 0) return;
+            if (!isTypingActive || typingTimeLeft <= 0) return;
             const key = e.key.toLowerCase();
             if (key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
 
@@ -644,6 +713,7 @@
                 document.getElementById('timer').innerText = typingTimeLeft;
                 if (typingTimeLeft <= 0) {
                     clearInterval(timerInterval);
+                    isTypingActive = false;
                     endGame(currentMode, typingScore, typingScore, typingMiss);
                 }
             }, 1000);
@@ -715,6 +785,7 @@
         let elemScore = 0;
         let elemTimeLeft = 30;
         let currentElement = {};
+        let isElemActive = false;
 
         function startElementQuiz() {
             playerName = document.getElementById('player-name-element').value.trim();
@@ -725,6 +796,7 @@
 
             elemScore = 0;
             elemTimeLeft = 30;
+            isElemActive = false;
             document.getElementById('elem-score').innerText = elemScore;
             document.getElementById('elem-timer').innerText = elemTimeLeft;
             document.getElementById('elem-feedback').innerText = "";
@@ -732,14 +804,18 @@
             showScreen('element-game-screen');
             nextElementQuiz();
 
-            elemTimerInterval = setInterval(() => {
-                elemTimeLeft--;
-                document.getElementById('elem-timer').innerText = elemTimeLeft;
-                if (elemTimeLeft <= 0) {
-                    clearInterval(elemTimerInterval);
-                    endGame('element', elemScore, elemScore, 0);
-                }
-            }, 1000);
+            startCountdown(() => {
+                isElemActive = true;
+                elemTimerInterval = setInterval(() => {
+                    elemTimeLeft--;
+                    document.getElementById('elem-timer').innerText = elemTimeLeft;
+                    if (elemTimeLeft <= 0) {
+                        clearInterval(elemTimerInterval);
+                        isElemActive = false;
+                        endGame('element', elemScore, elemScore, 0);
+                    }
+                }, 1000);
+            });
         }
 
         function nextElementQuiz() {
@@ -767,7 +843,7 @@
         }
 
         function checkElementAnswer(selected) {
-            if (elemTimeLeft <= 0) return;
+            if (!isElemActive || elemTimeLeft <= 0) return;
             const feedback = document.getElementById('elem-feedback');
             if (selected === currentElement.name) {
                 elemScore += 1;
@@ -814,12 +890,7 @@
                 { q: "250mL は 2L の何分の何にあたりますか？", options: ["1/4", "1/8", "1/10", "1/5"], answer: 1 },
                 { q: "次の分数のうち、これ以上約分できない分数（既約分数）はどれですか？", options: ["6/9", "4/10", "7/12", "8/12"], answer: 2 },
                 { q: "底辺が 10cm、高さが 6cm の三角形の面積は何平方センチメートルですか？", options: ["60cm²", "30cm²", "15cm²", "20cm²"], answer: 1 },
-                { q: "縮尺 1:50000 の地図上で 4cm の長さは、実際の道のりで何 km ですか？", options: ["2km", "20km", "0.2km", "200km"], answer: 0 },
-                ...Array.from({length: 20}, (_, i) => ({
-                    q: `算数の小6実力テスト 応用問題 第${i+31}問：${i+12} × ${i+3} の計算結果は？`,
-                    options: [`${(i+12)*(i+3)}`, `${(i+12)*(i+3)+15}`, `${(i+12)*(i+3)-8}`, `${(i+12)*(i+3)*2}`],
-                    answer: 0
-                }))
+                { q: "縮尺 1:50000 の地図上で 4cm の長さは、実際の道のりで何 km ですか？", options: ["2km", "20km", "0.2km", "200km"], answer: 0 }
             ],
             japanese: [
                 { q: "「熟語」の構成として、意味が反対になる漢字の組み合わせはどれ？", options: ["上下", "強弱", "音読", "消去"], answer: 1 },
@@ -841,12 +912,7 @@
                 { q: "次のうち、主語と述語の関係が正しく成り立っている文はどれですか？", options: ["鳥が空を飛ぶ。", "本が机を読んだ。", "風が木を走る。", "雨が歌う。"], answer: 0 },
                 { q: "「ついに」と同じような意味で使われる副詞はどれですか？", options: ["とうとう", "たまに", "めったに", "すぐに"], answer: 0 },
                 { q: "物事をたとえて表現する修辞技法を何と言いますか？", options: ["比喩（たとえ）", "体言止め", "倒置法", "対句法"], answer: 0 },
-                { q: "次の漢字「懐かしい」の正しい読み方はどれですか？", options: ["なつかしい", "くやしい", "かなしい", "たのしい"], answer: 0 },
-                ...Array.from({length: 30}, (_, i) => ({
-                    q: `国語の小6実力テスト 第${i+21}問：漢字の読み書きと文法事項の確認問題${i+1}`,
-                    options: ["主語", "述語", "修飾語", "独立語"],
-                    answer: i % 4
-                }))
+                { q: "次の漢字「懐かしい」の正しい読み方はどれですか？", options: ["なつかしい", "くやしい", "かなしい", "たのしい"], answer: 0 }
             ],
             science: [
                 { q: "植物が日光をうけて、二酸化炭素と水から養分と酸素を作るはたらきを何というか？", options: ["呼吸", "蒸散", "光合成", "受粉"], answer: 2 },
@@ -868,12 +934,7 @@
                 { q: "植物の葉にある、水蒸気を外に出す小さなすきまの名前を何と言いますか？", options: ["気孔", "導管", "篩管", "葉緑体"], answer: 0 },
                 { q: "てこの実験で、支点から力点までの距離を2倍にすると、おもちを持ち上げるのに必要な力はどうなりますか？", options: ["半分で済む", "2倍になる", "変わらない", "4倍になる"], answer: 0 },
                 { q: "大地の変化において、地震や火山活動を引き起こすもとになっている巨大なエネルギーはどこから生まれますか？", options: ["地球内部の熱（マグマなど）", "太陽の光", "月の引力", "風の力"], answer: 0 },
-                { q: "ヒトの呼吸によって、吸い込んだ空気と吐き出した空気で最も割合が大きく減る気体は何ですか？", options: ["窒素", "酸素", "二酸化炭素", "アルゴン"], answer: 1 },
-                ...Array.from({length: 30}, (_, i) => ({
-                    q: `理科の小6実力テスト 第${i+21}問：自然と実験に関する確認問題${i+1}`,
-                    options: ["光合成", "呼吸", "蒸散", "水溶液"],
-                    answer: i % 4
-                }))
+                { q: "ヒトの呼吸によって、吸い込んだ空気と吐き出した空気で最も割合が大きく減る気体は何ですか？", options: ["窒素", "酸素", "二酸化炭素", "アルゴン"], answer: 1 }
             ],
             social: [
                 { q: "日本国憲法に定められている「国民の三大義務」に含まれないものは？", options: ["教育の義務", "勤労の義務", "納税の義務", "投票の義務"], answer: 3 },
@@ -895,12 +956,7 @@
                 { q: "安土桃山時代に天下統一を進め、検地や刀狩りを行った人物は誰ですか？", options: ["織田信長", "豊臣秀吉", "徳川家康", "足利義満"], answer: 1 },
                 { q: "北海道で盛んな農業の形式として、畑作とともに広く行われているものは何ですか？", options: ["稲作（二期作）", "酪農・畜産業", "みかん栽培", "茶畑栽培"], answer: 1 },
                 { q: "日本が加盟しており、世界平和や国際協力を目的としている国際連合の本部はどこにありますか？", options: ["ワシントンD.C.", "ジュネーブ", "ニューヨーク", "ロンドン"], answer: 2 },
-                { q: "鎌倉時代に新しく広まった仏教の宗派の一つで、親鸞が開いた宗派は何ですか？", options: ["浄土真宗（一向宗）", "曹洞宗", "日蓮宗", "臨済宗"], answer: 0 },
-                ...Array.from({length: 30}, (_, i) => ({
-                    q: `社会の小6実力テスト 第${i+21}問：歴史・地理に関する確認問題${i+1}`,
-                    options: ["鎌倉時代", "江戸時代", "明治時代", "昭和時代"],
-                    answer: i % 4
-                }))
+                { q: "鎌倉時代に新しく広まった仏教の宗派の一つで、親鸞が開いた宗派は何ですか？", options: ["浄土真宗（一向宗）", "曹洞宗", "日蓮宗", "臨済宗"], answer: 0 }
             ]
         };
 
@@ -908,7 +964,8 @@
         let testIndex = 0;
         let testScore = 0;
         let testTimeLeft = 900;
-        let userTestAnswers = []; // ユーザーの解答履歴を保存する配列
+        let userTestAnswers = [];
+        let isTestActive = false;
 
         function startSubjectTest(subject) {
             playerName = document.getElementById('player-name-test').value.trim();
@@ -919,18 +976,24 @@
 
             testSubject = subject;
             let pool = questionBank[subject] || questionBank.math;
+            // プールから確実に10問（またはプール全体の最大数）を安全に抽出
             testQuestions = [...pool].sort(() => 0.5 - Math.random()).slice(0, 10);
             testIndex = 0;
             testScore = 0;
             testTimeLeft = 900;
-            userTestAnswers = []; // 履歴をリセット
+            userTestAnswers = [];
+            isTestActive = false;
 
             showScreen('test-play-screen');
             const titles = { math: '算数テスト (10問)', japanese: '国語テスト (10問)', science: '理科テスト (10問)', social: '社会テスト (10問)' };
             document.getElementById('test-subject-title').innerText = titles[subject];
-
-            startTestTimer();
+            updateTestTimerDisplay();
             showTestQuestion();
+
+            startCountdown(() => {
+                isTestActive = true;
+                startTestTimer();
+            });
         }
 
         function startTestTimer() {
@@ -941,6 +1004,7 @@
                 updateTestTimerDisplay();
                 if (testTimeLeft <= 0) {
                     clearInterval(testTimerInterval);
+                    isTestActive = false;
                     endGame('test', testScore * 10, testScore, 0);
                 }
             }, 1000);
@@ -955,8 +1019,8 @@
         function showTestQuestion() {
             if (testIndex >= testQuestions.length) {
                 clearInterval(testTimerInterval);
+                isTestActive = false;
                 let finalScore100 = testScore * 10;
-                buildTestReviewUI(); // 結果発表時に一覧を作成
                 endGame('test', finalScore100, testScore, 0);
                 return;
             }
@@ -978,12 +1042,12 @@
         }
 
         function checkTestAnswer(selectedIdx) {
+            if (!isTestActive) return;
             let qData = testQuestions[testIndex];
             let isCorrect = (selectedIdx === qData.answer);
             if (isCorrect) {
                 testScore += 1;
             }
-            // 解答履歴を保存
             userTestAnswers.push({
                 question: qData.q,
                 options: qData.options,
@@ -996,7 +1060,6 @@
             showTestQuestion();
         }
 
-        // 正誤一覧（こたえあわせ）のHTMLを組み立てる関数
         function buildTestReviewUI() {
             const container = document.getElementById('test-review-list');
             const reviewWrapper = document.getElementById('test-review-container');
